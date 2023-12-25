@@ -10,10 +10,9 @@
 #define FPS 60
 // the max number of rows in the width of the screen
 #define maxBlockCols 6
-// the number of lignes in each block
-#define blockSegments 8
-#define numberOfContacts 30
-typedef struct {
+// the number of chars in each block
+#define blockSegments 120
+typedef struct Contact {
   bool isDeleted;
   // j'ai ajouter 1 a chaque taille de string pour le caractere de fin de chaine
   char iD[9];
@@ -21,6 +20,7 @@ typedef struct {
   char phoneNumber[11];
   char email[31];
   char *otherInfo;
+  struct Contact *nextContact;
 } Contact;
 
 typedef struct Block {
@@ -79,13 +79,56 @@ Contact *createContact(char ID[9]) {
 
   return contact;
 }
+Block *addBlock(FileInfo *fileinfo) {
+  FileInfo *tmp = fileinfo;
+  if (fileinfo->firstBlock == NULL) {
+    Block *block = malloc(sizeof(Block));
+    fileinfo->totalSize++;
+    block->blockNumber = fileinfo->totalSize;
+    block->ocupiedSpace = 0;
+    block->nextBlock = NULL;
+    return block;
+  }
+  while (fileinfo->firstBlock->nextBlock != NULL) {
+    fileinfo->firstBlock = fileinfo->firstBlock->nextBlock;
+  }
+  Block *block = malloc(sizeof(Block));
+  fileinfo->totalSize++;
+  block->blockNumber = fileinfo->totalSize;
+  block->ocupiedSpace = 0;
+  block->nextBlock = NULL;
+  return block;
+}
 
-void fillFile(FILE *file) {
-  for (int i = 0; i < numberOfContacts; i++) {
+void fillFile(FileInfo fileinfo, FILE *file) {
+  for (int i = 0; i < fileinfo.contactSize; i++) {
     long iD = ((i + 1) * 10000019) % 100000000;
     char ID[9];
     sprintf(ID, "%08ld", iD);
     Contact *contact = createContact(ID);
+    // the size of the contatcs in chars
+    int contactSize = 1 + strlen(contact->iD) + strlen(contact->name) +
+                      strlen(contact->phoneNumber) + strlen(contact->email) +
+                      strlen(contact->otherInfo);
+    Block *block = fileinfo.firstBlock;
+    if (block == NULL) {
+      fileinfo.firstBlock = addBlock(&fileinfo);
+      block = fileinfo.firstBlock;
+      block->Contact = contact;
+    } else {
+      Block *tmp = block;
+      while (tmp->Contact != NULL) {
+        tmp = tmp->nextBlock;
+      }
+      tmp->Contact = contact;
+    }
+    while (block->ocupiedSpace + contactSize > blockSegments) {
+      if (block->nextBlock == NULL) {
+        block->nextBlock = addBlock(&fileinfo);
+      }
+      block = block->nextBlock;
+    }
+    block->ocupiedSpace += contactSize;
     if (contact->isDeleted == false)
       fprintf(file, "%d %s %s %s %s %s\n", 0, contact->iD, contact->name,
               contact->phoneNumber, contact->email, contact->otherInfo);
@@ -96,20 +139,6 @@ void fillFile(FILE *file) {
     free(contact->otherInfo);
   }
   rewind(file);
-}
-// create a new block
-Block *addBlock(FileInfo *fileinfo) {
-  FileInfo *tmp = fileinfo;
-  while (fileinfo->firstBlock->nextBlock != NULL) {
-    fileinfo->firstBlock = fileinfo->firstBlock->nextBlock;
-  }
-  Block *block = malloc(sizeof(Block));
-  fileinfo->totalSize++;
-  block->blockNumber = fileinfo->totalSize;
-  block->ocupiedSpace = 0;
-  block->nextBlock = NULL;
-  block->Contact = malloc(blockSegments * sizeof(Contact));
-  return block;
 }
 
 int main(int argc, char *argv[]) {
@@ -123,10 +152,11 @@ int main(int argc, char *argv[]) {
   SDL_Renderer *ren = SDL_CreateRenderer(
       win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
   FILE *file = fopen("Contacts.bin", "w+");
-  fillFile(file);
   FileInfo fileinfo;
   fileinfo.contactSize = 41;
+  fileinfo.firstBlock = NULL;
   fileinfo.totalSize = 0;
+  fileinfo.firstBlock = addBlock(&fileinfo);
   bool running = true;
   SDL_Event event;
   // FIX:account for every division it could be a floating number
@@ -135,13 +165,13 @@ int main(int argc, char *argv[]) {
   if (extraBlock != 0) {
     Blockrows++;
   }
-  // if (fileinfo.totalSize % blockSegments == 0) {
-  //   BlockCol++;
-  // }
+  for (int i = 0; i < (Blockrows * maxBlockCols) - 1; i++) {
+    addBlock(&fileinfo);
+  }
+  fillFile(fileinfo, file);
   int BlockWidth = WINDOW_WIDTH / maxBlockCols;
   int BlockHeight = WINDOW_HEIGHT / Blockrows;
   SDL_RenderClear(ren);
-  // WARNING: ida bdlt haja fi l bocks mtnsach tdkhol had l code ll loop
   while (running) {
     while (SDL_PollEvent(&event)) {
       if (event.type == SDL_QUIT) {
