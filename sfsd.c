@@ -141,9 +141,9 @@ void fillFile(FileInfo *fileinfo, FILE *file) {
     else
       fprintf(file, "%d,%s,%s,%s,%s\n", 1, contact->iD, contact->name,
               contact->phoneNumber, contact->email);
+    free(contact->otherInfo);
     free(contact);
     free(contactString);
-    free(contact->otherInfo);
   }
 }
 
