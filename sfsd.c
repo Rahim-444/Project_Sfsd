@@ -20,14 +20,13 @@ typedef struct Contact {
   char phoneNumber[11];
   char email[31];
   char *otherInfo;
-  struct Contact *nextContact;
 } Contact;
 
 typedef struct Block {
   int blockNumber;
   int ocupiedSpace; // in segments
   struct Block *nextBlock;
-  Contact *Contact;
+  char Contacts[blockSegments];
 } Block;
 
 typedef struct {
@@ -79,26 +78,24 @@ Contact *createContact(char ID[9]) {
 
   return contact;
 }
+
 Block *addBlock(FileInfo *fileinfo) {
-  FileInfo *tmp = fileinfo;
+  Block *block = malloc(sizeof(Block));
   if (fileinfo->firstBlock == NULL) {
-    Block *block = malloc(sizeof(Block));
     fileinfo->totalSize++;
     block->blockNumber = fileinfo->totalSize;
     block->ocupiedSpace = 0;
-    block->Contact = NULL;
     block->nextBlock = NULL;
     return block;
   }
   while (fileinfo->firstBlock->nextBlock != NULL) {
     fileinfo->firstBlock = fileinfo->firstBlock->nextBlock;
   }
-  Block *block = malloc(sizeof(Block));
   fileinfo->totalSize++;
   block->blockNumber = fileinfo->totalSize;
-  block->Contact = NULL;
   block->ocupiedSpace = 0;
   block->nextBlock = NULL;
+  fileinfo->firstBlock->nextBlock = block;
   return block;
 }
 
@@ -113,19 +110,25 @@ void fillFile(FileInfo *fileinfo, FILE *file) {
     int contactSize = 1 + strlen(contact->iD) + strlen(contact->name) +
                       strlen(contact->phoneNumber) + strlen(contact->email) +
                       strlen(contact->otherInfo);
-    if (block->Contact == NULL) {
-      block->Contact = contact;
+    char *contactString = malloc(contactSize * sizeof(char));
+    sprintf(contactString, "%d %s %s %s %s %s\n", contact->isDeleted,
+            contact->iD, contact->name, contact->phoneNumber, contact->email,
+            contact->otherInfo);
+    if (block->ocupiedSpace + contactSize > blockSegments) {
+      int cpt = 0;
+      for (int j = block->ocupiedSpace; (j < blockSegments) && (j); j++) {
+        block->Contacts[j] = contactString[j - block->ocupiedSpace];
+        cpt++;
+      }
+      block->nextBlock = addBlock(fileinfo);
+      block = block->nextBlock;
+      for (int j = 0; j < contactSize - cpt; j++) {
+        block->Contacts[j] = contactString[j + cpt];
+      }
     } else {
-      if (block->ocupiedSpace + contactSize > blockSegments) {
-        block->nextBlock = addBlock(fileinfo);
-        block = block->nextBlock;
-        block->Contact = contact;
-      } else {
-        Block *tmp = block;
-        while (tmp->nextBlock != NULL) {
-          tmp = tmp->nextBlock;
-        }
-        tmp->Contact = contact;
+      for (int j = block->ocupiedSpace; j < block->ocupiedSpace + contactSize;
+           j++) {
+        block->Contacts[j] = contactString[j - block->ocupiedSpace];
       }
     }
     block->ocupiedSpace += contactSize;
@@ -157,21 +160,17 @@ int main(int argc, char *argv[]) {
   fileinfo->firstBlock = NULL;
   fileinfo->totalSize = 0;
   fileinfo->firstBlock = addBlock(fileinfo);
-  bool running = true;
-  SDL_Event event;
-  // FIX:account for every division it could be a floating number
+  // fillFile(fileinfo, file);
   int Blockrows = ((fileinfo->contactSize / blockSegments) / maxBlockCols);
   float extraBlock = fileinfo->contactSize % blockSegments;
   if (extraBlock != 0) {
     Blockrows++;
   }
-  for (int i = 0; i < (Blockrows * maxBlockCols) - 1; i++) {
-    addBlock(fileinfo);
-  }
-  fillFile(fileinfo, file);
   int BlockWidth = WINDOW_WIDTH / maxBlockCols;
   int BlockHeight = WINDOW_HEIGHT / Blockrows;
   SDL_RenderClear(ren);
+  bool running = true;
+  SDL_Event event;
   while (running) {
     while (SDL_PollEvent(&event)) {
       if (event.type == SDL_QUIT) {
@@ -192,42 +191,25 @@ int main(int argc, char *argv[]) {
         SDL_RenderFillRect(ren, &rect);
       }
     }
-    // for (int i = 0; i <= maxBlockCols; i++) {
-    //   for (int j = 0; j <= Blockrows; j++) {
-    //     for (int k = 0; k < fileinfo.contactSize; k++) {
-    //       // divide each block into blockSegments number of lignes
-    //       int fragmentHeight = (BlockHeight - 5) / blockSegments;
-    //       SDL_Rect rect = {i * BlockWidth, j * BlockHeight + k *
-    //       fragmentHeight, fragmentHeight,
-    //                        BlockWidth - 5, fragmentHeight};
-    //       SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
-    //       SDL_RenderDrawRect(ren, &rect);
-    //     }
-    //   }
-    // }
-    // write the last loop again using while because we have a dynamic list of
-    // contacts
-    // FIX: this is stright up wrong
     Block *block = fileinfo->firstBlock;
     int i = 0;
     int j = 0;
-    while (block->nextBlock != NULL) {
-      Contact *contact = block->Contact;
-      while (contact->nextContact != NULL) {
+    while (block != NULL) {
+      for (int k = 0; k < block->ocupiedSpace; k++) {
         // divide each block into blockSegments number of lignes
         int fragmentHeight = (BlockHeight - 5) / blockSegments;
-        SDL_Rect rect = {i * BlockWidth, j * BlockHeight + i * fragmentHeight,
-                         BlockWidth - 5, fragmentHeight};
+        SDL_Rect rect = {i * BlockWidth, j * BlockHeight + k * fragmentHeight,
+                         fragmentHeight, BlockWidth - 5};
         SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
         SDL_RenderDrawRect(ren, &rect);
-        contact = contact->nextContact;
-        j++;
       }
       block = block->nextBlock;
       i++;
+      if (i == maxBlockCols) {
+        i = 0;
+        j++;
+      }
     }
-    SDL_RenderPresent(ren);
-    SDL_Delay(1000 / FPS);
   }
   SDL_DestroyWindow(win);
   SDL_DestroyRenderer(ren);
