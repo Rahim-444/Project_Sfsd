@@ -19,7 +19,7 @@ typedef struct Contact {
   char name[31];
   char phoneNumber[11];
   char email[31];
-  char *otherInfo;
+  char otherInfo[251];
 } Contact;
 
 typedef struct Block {
@@ -43,17 +43,16 @@ Contact *createContact(char ID[9]) {
   *iD = atoi(ID);
   srand((unsigned int)time(NULL) + *iD);
 
-  int obsLength = (rand() % 200) + 1;
-  Contact *contact = malloc(sizeof(Contact));
-  contact->otherInfo = malloc(obsLength * sizeof(char));
+  int obsLength = (rand() % 250) + 1;
+  Contact *contact = (Contact *)malloc(sizeof(Contact));
   char *name = malloc(30 * sizeof(char));
   char *phoneNumber = malloc(10 * sizeof(char));
   char *email = malloc(30 * sizeof(char));
-
+  char *otherInfo = malloc(250 * sizeof(char));
   for (int i = 0; i < obsLength; i++) {
-    contact->otherInfo[i] = letters[rand() % 26];
+    otherInfo[i] = letters[rand() % 26];
   }
-
+  strcpy(contact->otherInfo, otherInfo);
   for (int i = 0; i < 30; i++) {
     name[i] = letters[rand() % 26];
   }
@@ -74,6 +73,7 @@ Contact *createContact(char ID[9]) {
   strcpy(contact->iD, ID);
   free(name);
   free(phoneNumber);
+  free(otherInfo);
   free(email);
 
   return contact;
@@ -109,14 +109,14 @@ void fillFile(FileInfo *fileinfo, FILE *file) {
                       strlen(contact->phoneNumber) + strlen(contact->email) +
                       strlen(contact->otherInfo) + 6;
     char *contactString = malloc(contactSize * sizeof(char));
-    // FIX:error here
     if (contact->isDeleted) {
       sprintf(contactString, "%d,%s,%s,%s,%s,%s\n", 1, contact->iD,
               contact->name, contact->phoneNumber, contact->email,
               contact->otherInfo);
     } else {
-      sprintf(contactString, "%d,%s,%s,%s,%s\n", 0, contact->iD, contact->name,
-              contact->phoneNumber, contact->email);
+      sprintf(contactString, "%d,%s,%s,%s,%s,%s\n", 0, contact->iD,
+              contact->name, contact->phoneNumber, contact->email,
+              contact->otherInfo);
     }
     if (block->ocupiedSpace + contactSize > blockSegments) { // chevauchement
       int cpt = 0;
@@ -140,9 +140,8 @@ void fillFile(FileInfo *fileinfo, FILE *file) {
       fprintf(file, "%d,%s,%s,%s,%s,%s\n", 0, contact->iD, contact->name,
               contact->phoneNumber, contact->email, contact->otherInfo);
     else
-      fprintf(file, "%d,%s,%s,%s,%s\n", 1, contact->iD, contact->name,
-              contact->phoneNumber, contact->email);
-    free(contact->otherInfo);
+      fprintf(file, "%d,%s,%s,%s,%s,%s\n", 1, contact->iD, contact->name,
+              contact->phoneNumber, contact->email, contact->otherInfo);
     free(contact);
     free(contactString);
   }
