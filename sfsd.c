@@ -39,7 +39,7 @@ typedef struct {
 
 Contact *createContact(char ID[9]) {
   char letters[] = "abcdefghijklmnopqrstuvwxyz";
-  int *iD = malloc(sizeof(int));
+  long *iD = malloc(sizeof(long));
   *iD = atoi(ID);
   srand((unsigned int)time(NULL) + *iD);
 
@@ -107,16 +107,17 @@ void fillFile(FileInfo *fileinfo, FILE *file) {
     // the size of the contatcs in chars
     int contactSize = 1 + strlen(contact->iD) + strlen(contact->name) +
                       strlen(contact->phoneNumber) + strlen(contact->email) +
-                      strlen(contact->otherInfo) + 5 +
-                      10; // for testing purposes
+                      strlen(contact->otherInfo) + 6;
     char *contactString = malloc(contactSize * sizeof(char));
-    sprintf(contactString, "%d,%s,%s,%s,%s,%s\n", contact->isDeleted,
-            contact->iD, contact->name, contact->phoneNumber, contact->email,
-            contact->otherInfo);
-    // // parcourir jusqu'a la fin de bloc
-    // while (block->nextBlock != NULL) {
-    //   block = block->nextBlock;
-    // }
+    // FIX:error here
+    if (contact->isDeleted) {
+      sprintf(contactString, "%d,%s,%s,%s,%s,%s\n", 1, contact->iD,
+              contact->name, contact->phoneNumber, contact->email,
+              contact->otherInfo);
+    } else {
+      sprintf(contactString, "%d,%s,%s,%s,%s\n", 0, contact->iD, contact->name,
+              contact->phoneNumber, contact->email);
+    }
     if (block->ocupiedSpace + contactSize > blockSegments) { // chevauchement
       int cpt = 0;
       for (int j = block->ocupiedSpace + 1; j <= blockSegments; j++) {
