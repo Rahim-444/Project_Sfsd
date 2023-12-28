@@ -10,7 +10,7 @@
 // the max number of rows in the width of the screen
 #define maxBlockCols 6
 // the number of chars in each block
-#define blockSegments 120
+#define blockSegments 1000
 typedef struct Contact {
   bool isDeleted;
   // j'ai ajouter 1 a chaque taille de string pour le caractere de fin de chaine
@@ -104,40 +104,40 @@ void fillFile(FileInfo *fileinfo, FILE *file) {
     sprintf(ID, "%08ld", iD);
     Contact *contact = createContact(ID);
     // the size of the contatcs in chars
-    int contactSize = 1 + strlen(contact->iD) + strlen(contact->name) +
-                      strlen(contact->phoneNumber) + strlen(contact->email) +
-                      strlen(contact->otherInfo) + 6;
-    char *contactString = malloc(contactSize * sizeof(char));
+    int contactSize =
+        snprintf(NULL, 0, "%d,%s,%s,%s,%s,%s$", contact->isDeleted, contact->iD,
+                 contact->name, contact->phoneNumber, contact->email,
+                 contact->otherInfo);
+    char *contactString = malloc(contactSize + 1);
     if (contact->isDeleted) {
-      snprintf(contactString, sizeof(contactString), "%d,%s,%s,%s,%s,%s\n", 1,
-               contact->iD, contact->name, contact->phoneNumber, contact->email,
-               contact->otherInfo);
-
+      sprintf(contactString, "%d,%s,%s,%s,%s,%s$", 1, contact->iD,
+              contact->name, contact->phoneNumber, contact->email,
+              contact->otherInfo);
     } else {
-      snprintf(contactString, sizeof(contactString), "%d,%s,%s,%s,%s,%s\n", 0,
-               contact->iD, contact->name, contact->phoneNumber, contact->email,
-               contact->otherInfo);
+      sprintf(contactString, "%d,%s,%s,%s,%s,%s$", 0, contact->iD,
+              contact->name, contact->phoneNumber, contact->email,
+              contact->otherInfo);
     }
     if (block->ocupiedSpace + contactSize > blockSegments) { // chevauchement
       int cpt = 0;
-      for (int j = block->ocupiedSpace + 1; j < blockSegments; j++) {
-        block->Contacts[j] = contactString[j - (block->ocupiedSpace + 1)];
+      for (int j = block->ocupiedSpace; j < blockSegments; j++) {
+        block->Contacts[j] = contactString[j - block->ocupiedSpace];
         cpt++;
       }
-      printf("%s\n", block->Contacts);
+      block->ocupiedSpace = blockSegments;
       addBlock(fileinfo);
       block = block->nextBlock;
       for (int j = 0; j < contactSize - cpt; j++) {
         block->Contacts[j] = contactString[j + cpt];
       }
+      block->ocupiedSpace = contactSize - cpt;
     } else { // non chevauchemen
-      for (int j = block->ocupiedSpace + 1;
-           j < block->ocupiedSpace + 1 + contactSize; j++) {
-        block->Contacts[j] = contactString[j - block->ocupiedSpace - 1];
+      for (int j = block->ocupiedSpace; j < block->ocupiedSpace + contactSize;
+           j++) {
+        block->Contacts[j] = contactString[j - block->ocupiedSpace];
       }
+      block->ocupiedSpace += contactSize;
     }
-    printf("%s\n", block->Contacts);
-    block->ocupiedSpace += contactSize;
     if (contact->isDeleted == false)
       fprintf(file, "%d,%s,%s,%s,%s,%s\n", 0, contact->iD, contact->name,
               contact->phoneNumber, contact->email, contact->otherInfo);
@@ -160,74 +160,70 @@ int main(int argc, char *argv[]) {
   SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
   FILE *file = fopen("Contacts.bin", "w+");
   FileInfo *fileinfo = malloc(sizeof(FileInfo));
-  fileinfo->contactSize = 30;
+  fileinfo->contactSize = 60;
   fileinfo->firstBlock = NULL;
   fileinfo->totalSize = 0;
   fillFile(fileinfo, file);
-  int Blockrows = ((fileinfo->contactSize / blockSegments) / maxBlockCols);
-  float extraBlock = fileinfo->contactSize % blockSegments;
+  int Blockrows = (fileinfo->totalSize / maxBlockCols);
+  float extraBlock = fileinfo->totalSize % maxBlockCols;
   if (extraBlock != 0) {
     Blockrows++;
   }
   int BlockWidth = WINDOW_WIDTH / maxBlockCols;
+  int BlockHeight = WINDOW_HEIGHT / Blockrows;
   SDL_RenderClear(ren);
   bool running = true;
   SDL_Event event;
-  // Block *block = fileinfo->firstBlock;
-  // for (int i = 0; i < fileinfo->totalSize; i++) {
-  //   printf("%s\n", block->Contacts);
-  //   block = block->nextBlock;
-  // }
-  // while (running) {
-  //   while (SDL_PollEvent(&event)) {
-  //     if (event.type == SDL_QUIT) {
-  //       running = false;
-  //     }
-  //   }
-  //   SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
-  //   SDL_Rect rect = {0, 0, WINDOW_WIDTH, WINDOW_HEIGHT};
-  //   SDL_RenderFillRect(ren, &rect);
-  //   int i = 0;
-  //   int j = 0;
-  //   while (i < fileinfo->totalSize) {
-  //     int BlockHeight = WINDOW_HEIGHT / (fileinfo->totalSize / maxBlockCols);
-  //     SDL_Rect rect = {i * BlockWidth, j * BlockHeight, BlockWidth - 5,
-  //                      BlockHeight - 10};
-  //     // draw the boarder of the rectangle
-  //     int grayScale = 255;
-  //
-  //     SDL_SetRenderDrawColor(ren, grayScale, grayScale, grayScale, 255);
-  //     SDL_RenderFillRect(ren, &rect);
-  //     i++;
-  //     if (i == maxBlockCols) {
-  //       i = 0;
-  //       j++;
-  //     }
-  //   }
-  //   Block *block = fileinfo->firstBlock;
-  //   i = 0;
-  //   j = 0;
-  //   while (block != NULL) {
-  //     int BlockWidth = WINDOW_WIDTH / maxBlockCols;
-  //     int BlockHeight = WINDOW_HEIGHT / (fileinfo->totalSize / maxBlockCols);
-  //     for (int k = 0; k < block->ocupiedSpace; k++) {
-  //       // divide each block into blockSegments number of lignes
-  //       int fragmentHeight = (BlockHeight - 5) / blockSegments;
-  //       SDL_Rect rect = {i * BlockWidth, j * BlockHeight + k *
-  //       fragmentHeight,
-  //                        fragmentHeight, BlockWidth - 5};
-  //       SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
-  //       SDL_RenderDrawRect(ren, &rect);
-  //     }
-  //     block = block->nextBlock;
-  //     i++;
-  //     if (i == maxBlockCols) {
-  //       i = 0;
-  //       j++;
-  //     }
-  //   }
-  //   SDL_RenderPresent(ren);
-  // }
+  while (running) {
+    while (SDL_PollEvent(&event)) {
+      if (event.type == SDL_QUIT) {
+        running = false;
+      }
+    }
+    int color = 0;
+    SDL_SetRenderDrawColor(ren, color, color, color, 255);
+    SDL_Rect rect = {0, 0, WINDOW_WIDTH, WINDOW_HEIGHT};
+    SDL_RenderFillRect(ren, &rect);
+    int k = 0;
+    int i = 0;
+    int j = 0;
+    while (k < fileinfo->totalSize) {
+      SDL_Rect rect = {i * BlockWidth, j * BlockHeight, BlockWidth - 5,
+                       BlockHeight - 10};
+      int grayScale = 255;
+      SDL_SetRenderDrawColor(ren, grayScale, grayScale, grayScale, 255);
+      SDL_RenderFillRect(ren, &rect);
+      i++;
+      k++;
+      if (i == maxBlockCols) {
+        i = 0;
+        j++;
+      }
+    }
+    // Block *block = fileinfo->firstBlock;
+    // i = 0;
+    // j = 0;
+    // while (block != NULL) {
+    //   int BlockWidth = WINDOW_WIDTH / maxBlockCols;
+    //   int BlockHeight = WINDOW_HEIGHT / (fileinfo->totalSize / maxBlockCols);
+    //   for (int k = 0; k < block->ocupiedSpace; k++) {
+    //     // divide each block into blockSegments number of lignes
+    //     int fragmentHeight = (BlockHeight - 5) / blockSegments;
+    //     SDL_Rect rect = {i * BlockWidth, j * BlockHeight + k *
+    //     fragmentHeight,
+    //                      fragmentHeight, BlockWidth - 5};
+    //     SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
+    //     SDL_RenderDrawRect(ren, &rect);
+    //   }
+    //   block = block->nextBlock;
+    //   i++;
+    //   if (i == maxBlockCols) {
+    //     i = 0;
+    //     j++;
+    //   }
+    // }
+    SDL_RenderPresent(ren);
+  }
   SDL_DestroyWindow(win);
   SDL_DestroyRenderer(ren);
   SDL_Quit();
