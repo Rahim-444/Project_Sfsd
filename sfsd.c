@@ -118,6 +118,7 @@ void fillFile(FileInfo *fileinfo, FILE *file) {
               contact->name, contact->phoneNumber, contact->email,
               contact->otherInfo);
     }
+    // insertion block
     if (block->ocupiedSpace + contactSize > blockSegments) { // chevauchement
       int cpt = 0;
       for (int j = block->ocupiedSpace; j < blockSegments; j++) {
@@ -138,6 +139,7 @@ void fillFile(FileInfo *fileinfo, FILE *file) {
       }
       block->ocupiedSpace += contactSize;
     }
+    // insertion fichier
     if (contact->isDeleted == false)
       fprintf(file, "%d,%s,%s,%s,%s,%s\n", 0, contact->iD, contact->name,
               contact->phoneNumber, contact->email, contact->otherInfo);
@@ -146,6 +148,27 @@ void fillFile(FileInfo *fileinfo, FILE *file) {
               contact->phoneNumber, contact->email, contact->otherInfo);
     free(contactString);
     free(contact);
+  }
+}
+
+void CreateIndexFile(FileInfo *fileinfo, FILE *file) {
+  Block *block = fileinfo->firstBlock;
+  int i = 0;
+  char *id = malloc(8 * sizeof(char));
+  for (int i = 2; i < 9; i++) {
+    id[i - 2] = fileinfo->firstBlock->Contacts[i];
+  }
+  fprintf(file, "%s,%p\n", id, block);
+  while (block != NULL) {
+    for (int j = 0; j < block->ocupiedSpace; j++) {
+      if (block->Contacts[j] == '$') {
+        for (int k = j + 3; k < j + 11; k++) {
+          id[k - j - 3] = block->Contacts[k];
+          fprintf(file, "%s,%p\n", id, block);
+        }
+      }
+    }
+    block = block->nextBlock;
   }
 }
 
@@ -160,10 +183,12 @@ int main(int argc, char *argv[]) {
   SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
   FILE *file = fopen("Contacts.bin", "w+");
   FileInfo *fileinfo = malloc(sizeof(FileInfo));
-  fileinfo->contactSize = 60;
+  fileinfo->contactSize = 100;
   fileinfo->firstBlock = NULL;
   fileinfo->totalSize = 0;
   fillFile(fileinfo, file);
+  FILE *indexFile = fopen("Contact_index.bin", "w+");
+  CreateIndexFile(fileinfo, indexFile);
   int Blockrows = (fileinfo->totalSize / maxBlockCols);
   float extraBlock = fileinfo->totalSize % maxBlockCols;
   if (extraBlock != 0) {
@@ -178,6 +203,11 @@ int main(int argc, char *argv[]) {
     while (SDL_PollEvent(&event)) {
       if (event.type == SDL_QUIT) {
         running = false;
+      }
+      if (event.type == SDL_KEYDOWN) {
+        if (event.key.keysym.sym == SDLK_ESCAPE) {
+          fileinfo->totalSize += 1;
+        }
       }
     }
     int color = 0;
@@ -201,33 +231,31 @@ int main(int argc, char *argv[]) {
       }
     }
     // Block *block = fileinfo->firstBlock;
-    // i = 0;
-    // j = 0;
-    // while (block != NULL) {
-    //   int BlockWidth = WINDOW_WIDTH / maxBlockCols;
-    //   int BlockHeight = WINDOW_HEIGHT / (fileinfo->totalSize / maxBlockCols);
-    //   for (int k = 0; k < block->ocupiedSpace; k++) {
-    //     // divide each block into blockSegments number of lignes
-    //     int fragmentHeight = (BlockHeight - 5) / blockSegments;
-    //     SDL_Rect rect = {i * BlockWidth, j * BlockHeight + k *
-    //     fragmentHeight,
-    //                      fragmentHeight, BlockWidth - 5};
-    //     SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
-    //     SDL_RenderDrawRect(ren, &rect);
-    //   }
-    //   block = block->nextBlock;
-    //   i++;
-    //   if (i == maxBlockCols) {
-    //     i = 0;
-    //     j++;
-    //   }
-    // }
+    k = 0;
+    int grayScale = 0;
+    while (k < fileinfo->totalSize) {
+      for (int h = 0; h < blockSegments; h++) {
+        int SegementHeight = BlockHeight / blockSegments;
+        SDL_Rect rect = {i * BlockWidth, j * SegementHeight, BlockWidth - 5,
+                         SegementHeight - 1};
+        SDL_SetRenderDrawColor(ren, grayScale, grayScale, grayScale, 255);
+        SDL_RenderDrawRect(ren, &rect);
+        // block = block->nextBlock;
+      }
+      i++;
+      k++;
+      if (i == maxBlockCols) {
+        i = 0;
+        j++;
+      }
+    }
     SDL_RenderPresent(ren);
   }
   SDL_DestroyWindow(win);
   SDL_DestroyRenderer(ren);
   SDL_Quit();
   free(fileinfo);
+  free(indexFile);
   fclose(file);
   return 0;
 }
