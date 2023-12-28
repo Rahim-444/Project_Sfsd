@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
@@ -10,7 +11,7 @@
 // the max number of rows in the width of the screen
 #define maxBlockCols 6
 // the number of chars in each block
-#define blockSegments 1000
+#define blockSegments 300
 typedef struct Contact {
   bool isDeleted;
   // j'ai ajouter 1 a chaque taille de string pour le caractere de fin de chaine
@@ -20,6 +21,11 @@ typedef struct Contact {
   char email[31];
   char otherInfo[251];
 } Contact;
+typedef struct {
+  int Red;
+  int Green;
+  int Blue;
+} RGB;
 
 typedef struct Block {
   int blockNumber;  // num de block
@@ -40,8 +46,7 @@ Contact *createContact(char ID[9]) {
   char letters[] = "abcdefghijklmnopqrstuvwxyz";
   long *iD = malloc(sizeof(long));
   *iD = atoi(ID);
-  srand(*iD);
-
+  srand(time(NULL) + *iD);
   int obsLength = (rand() % 250) + 1;
   Contact *contact = (Contact *)malloc(sizeof(Contact));
   char *name = malloc(30 * sizeof(char));
@@ -205,9 +210,6 @@ int main(int argc, char *argv[]) {
         running = false;
       }
       if (event.type == SDL_KEYDOWN) {
-        if (event.key.keysym.sym == SDLK_ESCAPE) {
-          fileinfo->totalSize += 1;
-        }
       }
     }
     int color = 0;
@@ -230,18 +232,43 @@ int main(int argc, char *argv[]) {
         j++;
       }
     }
-    // Block *block = fileinfo->firstBlock;
     k = 0;
+    i = 0;
+    j = 0;
     int grayScale = 0;
+    float SegementHeight = (BlockHeight - 10) / (blockSegments * 1.0);
+    RGB *rgb = malloc(sizeof(RGB));
+    Block *block = fileinfo->firstBlock;
+    srand(1);
+    rgb->Red = rand() % 255;
+    rgb->Green = rand() % 255;
+    rgb->Blue = rand() % 255;
+    int cpt = 0;
     while (k < fileinfo->totalSize) {
       for (int h = 0; h < blockSegments; h++) {
-        int SegementHeight = BlockHeight / blockSegments;
-        SDL_Rect rect = {i * BlockWidth, j * SegementHeight, BlockWidth - 5,
-                         SegementHeight - 1};
-        SDL_SetRenderDrawColor(ren, grayScale, grayScale, grayScale, 255);
+        // if (block->Contacts[h] == '$') {
+        //   if (block->Contacts[h + 1] == '1') {
+        //     rgb->Red = 0;
+        //     rgb->Green = 0;
+        //     rgb->Blue = 0;
+        //   } else {
+        //     rgb->Red = rand() % 255;
+        //     rgb->Green = rand() % 255;
+        //     rgb->Blue = rand() % 255;
+        //     cpt++;
+        //   }
+        //   if (cpt == fileinfo->contactSize) {
+        //     rgb->Red = 0;
+        //     rgb->Green = 0;
+        //     rgb->Blue = 0;
+        //   }
+        // }
+        SDL_Rect rect = {i * BlockWidth, h * SegementHeight + j * BlockHeight,
+                         BlockWidth - 5, SegementHeight};
+        SDL_SetRenderDrawColor(ren, rgb->Red, rgb->Green, rgb->Blue, 255);
         SDL_RenderDrawRect(ren, &rect);
-        // block = block->nextBlock;
       }
+      block = block->nextBlock;
       i++;
       k++;
       if (i == maxBlockCols) {
@@ -249,7 +276,10 @@ int main(int argc, char *argv[]) {
         j++;
       }
     }
+    free(rgb);
     SDL_RenderPresent(ren);
+    SDL_RenderClear(ren);
+    SDL_Delay(1000 / FPS);
   }
   SDL_DestroyWindow(win);
   SDL_DestroyRenderer(ren);
