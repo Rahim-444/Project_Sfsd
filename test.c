@@ -1,17 +1,18 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct test {
-  char *s;
-} test;
-
+typedef struct Block {
+  int blockNumber;  // num de block
+  int ocupiedSpace; // in chars
+  char Contacts[120];
+  struct Block *nextBlock;
+} Block;
 int main(void) {
-  test *t = (test *)malloc(sizeof(test));
-  t->s = (char *)malloc(sizeof(char));
-  char kamal[10] = "kamal";
-  for (int i = 0; i < 500; i++) {
-    t->s[i] = kamal[i];
-  }
-  printf("%s\n", t->s);
+  FILE *file = fopen("Contact_index.bin", "r");
+  char *buffer = malloc(100 * sizeof(char));
+  char *block = malloc(sizeof(char));
+  fscanf(file, "%s,%s\n", buffer, block);
+  printf("%s\n", buffer);
+  printf("%s\n", block);
   return 0;
 }
