@@ -1,3 +1,4 @@
+#include "islam.h"
 #include <SDL2/SDL.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -13,6 +14,12 @@
 // the number of chars in each block must be bigger than 251 + 31 + 31 + 11 + 9
 // = 333 else the block woudn't be able to hold a contact
 #define blockSegments 334
+typedef struct {
+  int Red;
+  int Green;
+  int Blue;
+} RGB;
+
 typedef struct Contact {
   bool isDeleted;
   // j'ai ajouter 1 a chaque taille de string pour le caractere de fin de chaine
@@ -22,18 +29,6 @@ typedef struct Contact {
   char email[31];
   char *otherInfo;
 } Contact;
-typedef struct {
-  int Red;
-  int Green;
-  int Blue;
-} RGB;
-
-typedef struct Block {
-  int blockNumber;  // num de block
-  int ocupiedSpace; // in chars
-  char Contacts[blockSegments];
-  struct Block *nextBlock;
-} Block;
 
 typedef struct {
   Block *firstBlock;
@@ -171,20 +166,39 @@ void CreateIndexFile(FileInfo *fileinfo, FILE *file) {
     bool move = true;
     for (int j = 0; j < block->ocupiedSpace; j++) {
       if (block->Contacts[j] == '$') {
+        if ((block->nextBlock == NULL) && (j + 1 >= block->ocupiedSpace))
+          break;
         if (j + 10 < blockSegments) {
-          for (int k = j + 3; k < j + 11; k++) {
-            id[k - j - 3] = block->Contacts[k];
+          while (block->Contacts[j] != ',')
+            j++;
+          for (int k = j + 1; k < j + 9; k++) {
+            id[k - j - 1] = block->Contacts[k];
           }
+          id[8] = '\0';
         } else {
-          int cpt = 0;
-          for (int k = j + 3; k < blockSegments; k++) {
-            id[k - j - 3] = block->Contacts[k];
-            cpt++;
-          }
-          block = block->nextBlock;
-          move = false;
-          for (int k = 0; k < 10 - cpt; k++) {
-            id[k + cpt] = block->Contacts[k];
+          while ((block->Contacts[j] != ',') && (j < blockSegments))
+            j++;
+          if (j == blockSegments) {
+            block = block->nextBlock;
+            move = false;
+            while (block->Contacts[j] != ',')
+              j++;
+            for (int k = j + 1; k < j + 9; k++) {
+              id[k - j - 1] = block->Contacts[k];
+            }
+            id[8] = '\0';
+          } else {
+            int cpt = 0;
+            for (int k = j + 1; k < blockSegments; k++) {
+              id[k - j - 1] = block->Contacts[k];
+              cpt++;
+            }
+            block = block->nextBlock;
+            move = false;
+            for (int k = 0; k < 10 - cpt; k++) {
+              id[k + cpt] = block->Contacts[k];
+            }
+            id[8] = '\0';
           }
         }
         fprintf(file, "%s,%p\n", id, block);
@@ -207,12 +221,14 @@ int main(int argc, char *argv[]) {
   SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
   FILE *file = fopen("Contacts.bin", "w+");
   FileInfo *fileinfo = malloc(sizeof(FileInfo));
-  fileinfo->contactSize = 5;
+  fileinfo->contactSize = 50;
   fileinfo->firstBlock = NULL;
   fileinfo->totalSize = 0;
   fillFile(fileinfo, file);
   FILE *indexFile = fopen("Contact_index.bin", "w+");
   CreateIndexFile(fileinfo, indexFile);
+  fclose(indexFile);
+  islam();
   int Blockrows = (fileinfo->totalSize / maxBlockCols);
   float extraBlock = fileinfo->totalSize % maxBlockCols;
   if (extraBlock != 0) {
@@ -280,9 +296,9 @@ int main(int argc, char *argv[]) {
             cpt++;
           }
           if (cpt == fileinfo->contactSize) {
-            SDL_Rect rect = {
-                i * BlockWidth, h * SegementHeight + j * BlockHeight,
-                BlockWidth - 5, SegementHeight * (blockSegments - h + 1)};
+            SDL_Rect rect = {i * BlockWidth,
+                             h * SegementHeight + j * BlockHeight,
+                             BlockWidth - 5, 1200};
             SDL_SetRenderDrawColor(ren, 0, 0, 0, 255);
             SDL_RenderFillRect(ren, &rect);
             break;
@@ -311,7 +327,6 @@ int main(int argc, char *argv[]) {
   SDL_DestroyRenderer(ren);
   SDL_Quit();
   free(fileinfo);
-  fclose(indexFile);
   fclose(file);
   return 0;
 }

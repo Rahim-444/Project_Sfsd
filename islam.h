@@ -2,46 +2,34 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
-
-#define blockSegments 300
-#define MAX_OTHER_INFO_SIZE 250
-
-typedef struct Contact {
-    bool isDeleted;
-    int iD;
-    char name[31];
-    char phoneNumber[11];
-    char email[31];
-    char otherInfo[MAX_OTHER_INFO_SIZE];
-    struct Contact* next; 
-} Contact;
+#include <string.h>
 
 
-typedef struct IndexFile {
-    char id[10];
-    char Pblock[20];
-    struct IndexFile* next;
-} IndexFile;
-
+#define blockSegments 334
 typedef struct Block {
   int blockNumber;  // num de block
   int ocupiedSpace; // in chars
   char Contacts[blockSegments];
   struct Block *nextBlock;
 } Block;
+typedef struct IndexFile {
+    char id[10];
+    Block* Pblock;
+    struct IndexFile* next;
+} IndexFile;
 
 int compareIds(const void *a, const void *b) {
     return strcmp(((IndexFile *)a)->id, ((IndexFile *)b)->id);
 }
 
-char* rechercheDichotomique(IndexFile* arr, int left, int right, const char *searchId) {
+Block * rechercheDichotomique(IndexFile* arr, int left, int right, const char *searchId) {
 	
     if (right >= left) {
         int middle = left + (right - left) / 2;
 
         // Si l'élément est présent au milieu
         if (strcmp(arr[middle].id, searchId) == 0) {
-		printf("%d, %08s, %s.\n",middle,arr[middle].id,arr[middle].Pblock);
+		printf("%d, %s, %p.\n",middle,arr[middle].id,arr[middle].Pblock);
         return arr[middle].Pblock ;
         }
 
@@ -53,7 +41,8 @@ char* rechercheDichotomique(IndexFile* arr, int left, int right, const char *sea
         // Sinon, recherchez à droite
         return rechercheDichotomique(arr, middle + 1, right, searchId);
     }
-    printf("le Id: %08s n'existe pas!",searchId);
+    printf("le Id: %s n'existe pas!\n",searchId);
+    return NULL;
     // Si l'élément n'est pas présent dans le tableau
 
 }
@@ -121,9 +110,9 @@ void afficherTableau(IndexFile* tableau, int tailleTableau) {
     //printf("%p",tableau[0].Pblock);
     for (int i = 0; i < tailleTableau; i++) {
     	if(i>=0&&i<=9){
-    	printf("Index 0%d : ID = %s, PBlock: %s\n", i, tableau[i].id,tableau[i].Pblock);
+    	printf("Index 0%d : ID = %s, PBlock: %p\n", i, tableau[i].id,tableau[i].Pblock);
 		}else{
-        printf("Index %d : ID = %s, PBlock: %s\n", i, tableau[i].id,tableau[i].Pblock);}
+        printf("Index %d : ID = %s, PBlock: %p\n", i, tableau[i].id,tableau[i].Pblock);}
     }
 }
 
@@ -132,14 +121,14 @@ void libererTableau(IndexFile* tableau) {
 }
 
 IndexFile* IndexFile_to_tableau(int* tailleTableau) {
-    FILE *file = fopen("IndexFile.bin", "rb");
+    FILE *file = fopen("Contact_index.bin", "r");
     IndexFile tmp;
 
     if (file != NULL) {
         *tailleTableau = 0; // Initialiser la taille du tableau
 
         // Compter le nombre d'éléments dans le fichier
-        while (fscanf(file, "%8s,%11s\n", tmp.id, tmp.Pblock) == 2) {
+        while (fscanf(file, "%8s,%p\n", tmp.id, &tmp.Pblock) == 2) {
             (*tailleTableau)++;
         }
 
@@ -154,7 +143,7 @@ IndexFile* IndexFile_to_tableau(int* tailleTableau) {
 
         // Lire les données du fichier dans le tableau
         for (int i = 0; i < *tailleTableau; i++) {
-            fscanf(file, "%8s,%11s\n", tableau[i].id, tableau[i].Pblock);
+            fscanf(file, "%8s,%p\n", tableau[i].id, &tableau[i].Pblock);
         }
 
         fclose(file); // Fermer le fichier
@@ -166,24 +155,11 @@ IndexFile* IndexFile_to_tableau(int* tailleTableau) {
 }
 
 
-int main() {
-
+void islam() {
     int sizetab = 0;
-
     IndexFile* ptab = IndexFile_to_tableau(&sizetab);
-   
     mergeSort(ptab, 0,sizetab-1);
-
-    afficherTableau(ptab, sizetab);
-    void* adresse;
-    char tmp[16]="0x7ffd5e2b5b5f";
-//	strcpy(tmp,rechercheDichotomique(ptab, 0, sizetab - 1, "10000019"));
-    sscanf(tmp, "%p", &adresse);
-   
-	printf("%p",adresse);
-
+    Block *tmp = rechercheDichotomique(ptab, 0, sizetab - 1,"20000608");
+    printf("%p\n",tmp);
     libererTableau(ptab);
-
-
-    return 0;
 }
