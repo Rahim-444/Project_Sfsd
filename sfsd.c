@@ -96,6 +96,68 @@ void addBlock(FileInfo *fileinfo) {
     tmp->nextBlock = block;
   }
 }
+void insertContactinBlock(FileInfo *fileinfo, Contact *contact) {
+  Block *block = fileinfo->firstBlock;
+  while (block->nextBlock != NULL) {
+    block = block->nextBlock;
+  }
+  int contactSize = snprintf(NULL, 0, "%d,%s,%s,%s,%s,%s$", contact->isDeleted,
+                             contact->iD, contact->name, contact->phoneNumber,
+                             contact->email, contact->otherInfo);
+  char *contactString = malloc(contactSize + 1);
+  if (contact->isDeleted) {
+    sprintf(contactString, "%d,%s,%s,%s,%s,%s$", 1, contact->iD, contact->name,
+            contact->phoneNumber, contact->email, contact->otherInfo);
+  } else {
+    sprintf(contactString, "%d,%s,%s,%s,%s,%s$", 0, contact->iD, contact->name,
+            contact->phoneNumber, contact->email, contact->otherInfo);
+  }
+  int len = strlen(contactString);
+  // insertion block
+  if (block->ocupiedSpace + len > blockSegments) { // chevauchement
+    int cpt = 0;
+    for (int j = block->ocupiedSpace; j < blockSegments; j++) {
+      block->Contacts[j] = contactString[j - block->ocupiedSpace];
+      cpt++;
+    }
+    block->ocupiedSpace = blockSegments;
+    addBlock(fileinfo);
+    block = block->nextBlock;
+    for (int j = 0; j < len - cpt; j++) {
+      block->Contacts[j] = contactString[j + cpt];
+    }
+    block->ocupiedSpace = len - cpt;
+  } else { // non chevauchemen
+    for (int j = block->ocupiedSpace; j < block->ocupiedSpace + len; j++) {
+      block->Contacts[j] = contactString[j - block->ocupiedSpace];
+    }
+    block->ocupiedSpace += len;
+  }
+  free(contactString);
+}
+
+void insertContactinFile(FILE *file, Contact *contact) {
+
+  int contactSize = snprintf(NULL, 0, "%d,%s,%s,%s,%s,%s$", contact->isDeleted,
+                             contact->iD, contact->name, contact->phoneNumber,
+                             contact->email, contact->otherInfo);
+  char *contactString = malloc(contactSize + 1);
+  if (contact->isDeleted) {
+    sprintf(contactString, "%d,%s,%s,%s,%s,%s$", 1, contact->iD, contact->name,
+            contact->phoneNumber, contact->email, contact->otherInfo);
+  } else {
+    sprintf(contactString, "%d,%s,%s,%s,%s,%s$", 0, contact->iD, contact->name,
+            contact->phoneNumber, contact->email, contact->otherInfo);
+  }
+  int len = strlen(contactString);
+  if (contact->isDeleted == false)
+    fprintf(file, "%d,%s,%s,%s,%s,%s\n", 0, contact->iD, contact->name,
+            contact->phoneNumber, contact->email, contact->otherInfo);
+  else
+    fprintf(file, "%d,%s,%s,%s,%s,%s\n", 1, contact->iD, contact->name,
+            contact->phoneNumber, contact->email, contact->otherInfo);
+  free(contactString);
+}
 
 void fillFile(FileInfo *fileinfo, FILE *file) {
   addBlock(fileinfo);
@@ -105,50 +167,8 @@ void fillFile(FileInfo *fileinfo, FILE *file) {
     char ID[9];
     sprintf(ID, "%08ld", iD);
     Contact *contact = createContact(ID);
-    // the size of the contatcs in chars
-    int contactSize =
-        snprintf(NULL, 0, "%d,%s,%s,%s,%s,%s$", contact->isDeleted, contact->iD,
-                 contact->name, contact->phoneNumber, contact->email,
-                 contact->otherInfo);
-    char *contactString = malloc(contactSize + 1);
-    if (contact->isDeleted) {
-      sprintf(contactString, "%d,%s,%s,%s,%s,%s$", 1, contact->iD,
-              contact->name, contact->phoneNumber, contact->email,
-              contact->otherInfo);
-    } else {
-      sprintf(contactString, "%d,%s,%s,%s,%s,%s$", 0, contact->iD,
-              contact->name, contact->phoneNumber, contact->email,
-              contact->otherInfo);
-    }
-    int len = strlen(contactString);
-    // insertion block
-    if (block->ocupiedSpace + len > blockSegments) { // chevauchement
-      int cpt = 0;
-      for (int j = block->ocupiedSpace; j < blockSegments; j++) {
-        block->Contacts[j] = contactString[j - block->ocupiedSpace];
-        cpt++;
-      }
-      block->ocupiedSpace = blockSegments;
-      addBlock(fileinfo);
-      block = block->nextBlock;
-      for (int j = 0; j < len - cpt; j++) {
-        block->Contacts[j] = contactString[j + cpt];
-      }
-      block->ocupiedSpace = len - cpt;
-    } else { // non chevauchemen
-      for (int j = block->ocupiedSpace; j < block->ocupiedSpace + len; j++) {
-        block->Contacts[j] = contactString[j - block->ocupiedSpace];
-      }
-      block->ocupiedSpace += len;
-    }
-    // insertion fichier
-    if (contact->isDeleted == false)
-      fprintf(file, "%d,%s,%s,%s,%s,%s\n", 0, contact->iD, contact->name,
-              contact->phoneNumber, contact->email, contact->otherInfo);
-    else
-      fprintf(file, "%d,%s,%s,%s,%s,%s\n", 1, contact->iD, contact->name,
-              contact->phoneNumber, contact->email, contact->otherInfo);
-    free(contactString);
+    insertContactinBlock(fileinfo, contact);
+    insertContactinFile(file, contact);
     free(contact->otherInfo);
     free(contact);
   }
@@ -221,7 +241,7 @@ int main(int argc, char *argv[]) {
   SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
   FILE *file = fopen("Contacts.bin", "w+");
   FileInfo *fileinfo = malloc(sizeof(FileInfo));
-  fileinfo->contactSize = 50;
+  fileinfo->contactSize = 10;
   fileinfo->firstBlock = NULL;
   fileinfo->totalSize = 0;
   fillFile(fileinfo, file);
@@ -229,13 +249,6 @@ int main(int argc, char *argv[]) {
   CreateIndexFile(fileinfo, indexFile);
   fclose(indexFile);
   islam();
-  int Blockrows = (fileinfo->totalSize / maxBlockCols);
-  float extraBlock = fileinfo->totalSize % maxBlockCols;
-  if (extraBlock != 0) {
-    Blockrows++;
-  }
-  int BlockWidth = WINDOW_WIDTH / maxBlockCols;
-  int BlockHeight = WINDOW_HEIGHT / Blockrows;
   SDL_RenderClear(ren);
   bool running = true;
   SDL_Event event;
@@ -248,8 +261,21 @@ int main(int argc, char *argv[]) {
         if (event.key.keysym.sym == SDLK_ESCAPE) {
           running = false;
         }
+        if (event.key.keysym.sym == SDLK_SPACE) {
+          Contact *contact = createContact("92049238");
+          insertContactinBlock(fileinfo, contact);
+          insertContactinFile(file, contact);
+          fileinfo->contactSize++;
+        }
       }
     }
+    int Blockrows = (fileinfo->totalSize / maxBlockCols);
+    float extraBlock = fileinfo->totalSize % maxBlockCols;
+    if (extraBlock != 0) {
+      Blockrows++;
+    }
+    int BlockWidth = WINDOW_WIDTH / maxBlockCols;
+    int BlockHeight = WINDOW_HEIGHT / Blockrows;
     int color = 0;
     SDL_SetRenderDrawColor(ren, color, color, color, 255);
     SDL_Rect rect = {0, 0, WINDOW_WIDTH, WINDOW_HEIGHT};
