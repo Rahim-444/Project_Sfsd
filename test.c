@@ -1,18 +1,27 @@
 #include <stdio.h>
-#include <stdlib.h>
 
-typedef struct Block {
-  int blockNumber;  // num de block
-  int ocupiedSpace; // in chars
-  char Contacts[120];
-  struct Block *nextBlock;
-} Block;
-int main(void) {
-  FILE *file = fopen("Contact_index.bin", "r");
-  char *buffer = malloc(100 * sizeof(char));
-  char *block = malloc(sizeof(char));
-  fscanf(file, "%s,%s\n", buffer, block);
-  printf("%s\n", buffer);
-  printf("%s\n", block);
-  return 0;
+int binarySearch(int T[], int value, int n) {
+  int low = 0;
+  int high = n - 1;
+  int m = (low + high) / 2;
+  while (low <= high) {
+    if (T[m] == value)
+      return m;
+    if (T[m] > value)
+      high = m - 1;
+    else
+      low = m + 1;
+    m = (low + high) / 2;
+  }
+  return -1;
+}
+
+int main() {
+  int T[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
+  int n = sizeof(T) / sizeof(T[0]);
+  int value;
+  printf("please enter a value : ");
+  scanf("%d", &value);
+  int index = binarySearch(T, value, n);
+  printf("%d\n", index);
 }

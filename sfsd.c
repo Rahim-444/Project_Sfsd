@@ -1,5 +1,6 @@
 #include "islam.h"
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_keycode.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -19,16 +20,24 @@ typedef struct {
   int Green;
   int Blue;
 } RGB;
+typedef struct {
+  char ID[9];
+  Block *block;
+} contactArray;
+// defnied in islam.h
+//  typedef struct Block {
+//    int blockNumber;  // num de block
+//    int ocupiedSpace; // in chars
+//    char Contacts[blockSegments];
+//    struct Block *nextBlock;
+//  } Block;
 
-typedef struct Contact {
-  bool isDeleted;
-  // j'ai ajouter 1 a chaque taille de string pour le caractere de fin de chaine
-  char iD[9];
-  char name[31];
-  char phoneNumber[11];
-  char email[31];
-  char *otherInfo;
-} Contact;
+// typedef struct Contact {
+//   bool isDeleted;
+//   // j'ai ajouter 1 a chaque taille de string pour le caractere de fin de
+//   chaine char iD[9]; char name[31]; char phoneNumber[11]; char email[31];
+//   char *otherInfo;
+// } Contact;
 
 typedef struct {
   Block *firstBlock;
@@ -229,6 +238,104 @@ void CreateIndexFile(FileInfo *fileinfo, FILE *file) {
   }
   free(id);
 }
+Contact *createContactInput(FileInfo *fileinfo) {
+  char *name = malloc(30 * sizeof(char));
+  char *phoneNumber = malloc(10 * sizeof(char));
+  char *email = malloc(30 * sizeof(char));
+  char *otherInfo = malloc(250 * sizeof(char));
+  printf("Enter the name of the contact : ");
+  scanf("%s", name);
+  printf("\n");
+  printf("Enter the phone number of the contact : ");
+  scanf("%s", phoneNumber);
+  printf("\n");
+  printf("Enter the email of the contact : ");
+  scanf("%s", email);
+  printf("\n");
+  printf("Enter the other info of the contact : ");
+  scanf("%s", otherInfo);
+  printf("\n");
+  long iD = ((fileinfo->contactSize + 1) * 10000019) % 100000000;
+  char *ID = malloc(9 * sizeof(char));
+  sprintf(ID, "%08ld", iD);
+  Contact *contact = (Contact *)malloc(sizeof(Contact));
+  contact->otherInfo = malloc((strlen(otherInfo) + 1) * sizeof(char));
+  strcpy(contact->otherInfo, otherInfo);
+  strcpy(contact->name, name);
+  strcpy(contact->phoneNumber, phoneNumber);
+  strcpy(contact->email, email);
+  contact->isDeleted = false;
+  strcpy(contact->iD, ID);
+  free(name);
+  free(phoneNumber);
+  free(otherInfo);
+  free(email);
+  free(ID);
+  return contact;
+}
+int deleteContact(FileInfo *fileinfo) {
+  char ID[9];
+  char tmp[9];
+  Block *tmp2;
+
+  FILE *index = fopen("Contact_index.bin", "rw");
+  if (index == NULL) {
+    fprintf(stderr, "Error opening file.\n");
+    return 1;
+  }
+
+  contactArray *contacts = malloc(fileinfo->contactSize * sizeof(contactArray));
+  if (contacts == NULL) {
+    fprintf(stderr, "Memory allocation error.\n");
+    fclose(index);
+    return 1;
+  }
+
+  int i = 0;
+  while (fscanf(index, "%8s,%p\n", tmp, &tmp2) == 2 &&
+         i < fileinfo->contactSize) {
+    strcpy(contacts[i].ID, tmp);
+    printf("%s\n", contacts[i].ID);
+    contacts[i].block = tmp2;
+    i++;
+  }
+
+  printf("Enter the ID of the contact you want to delete: ");
+  scanf("%8s", ID);
+
+  printf("\n");
+
+  int contactFound = 0;
+  for (int j = 0; j < i; j++) {
+    if (strcmp(ID, contacts[j].ID) == 0) {
+      printf("Contact found\n");
+      // FIX: fix this beacuse it searches for the first $ which is the first
+      // contact in the block but not the contact we are nessaicarily looking
+      // for note that you have to use the next index file that has an offset
+      // which helps with doing this faster
+      contactFound = 1;
+      for (int i = 0; i < contacts[j].block->ocupiedSpace; i++) {
+        if (contacts[j].block->Contacts[i] == '$') {
+          contacts[j].block->Contacts[i + 1] = '1';
+          break;
+        }
+      }
+      break;
+    }
+  }
+
+  if (!contactFound) {
+    printf("Contact not found\n");
+  }
+  // rewrite the index file
+  CreateIndexFile(fileinfo, index);
+  // TODO: rewrite the contact file with the changes
+  //
+  free(contacts);
+  fclose(index);
+
+  return 0;
+}
 
 int main(int argc, char *argv[]) {
   if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
@@ -262,10 +369,13 @@ int main(int argc, char *argv[]) {
           running = false;
         }
         if (event.key.keysym.sym == SDLK_SPACE) {
-          Contact *contact = createContact("92049238");
+          Contact *contact = createContactInput(fileinfo);
           insertContactinBlock(fileinfo, contact);
           insertContactinFile(file, contact);
           fileinfo->contactSize++;
+        }
+        if (event.key.keysym.sym == SDLK_BACKSPACE) {
+          deleteContact(fileinfo);
         }
       }
     }

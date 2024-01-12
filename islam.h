@@ -17,6 +17,16 @@ typedef struct IndexFile {
     Block* Pblock;
     struct IndexFile* next;
 } IndexFile;
+typedef struct Contact {
+  bool isDeleted;
+  // j'ai ajouter 1 a chaque taille de string pour le caractere de fin de chaine
+  char iD[9];
+  char name[31];
+  char phoneNumber[11];
+  char email[31];
+  char *otherInfo;
+} Contact;
+
 
 int compareIds(const void *a, const void *b) {
     return strcmp(((IndexFile *)a)->id, ((IndexFile *)b)->id);
@@ -47,7 +57,7 @@ Block * rechercheDichotomique(IndexFile* arr, int left, int right, const char *s
 
 }
 
-void merge(IndexFile arr[], int left, int middle, int right) {
+void mm(IndexFile arr[], int left, int middle, int right) {
     int i, j, k;
     int n1 = middle - left + 1;
     int n2 = right - middle;
@@ -91,28 +101,142 @@ void merge(IndexFile arr[], int left, int middle, int right) {
     }
 }
 
-void mergeSort(IndexFile* arr, int left, int right) {
+void mSort(IndexFile* arr, int left, int right) {
     if (left < right) {
         // Same as (left+right)/2, but avoids overflow for large left and right
         int middle = left + (right - left) / 2;
 
         // Trier la première et la deuxième moitié
-        mergeSort(arr, left, middle);
-        mergeSort(arr, middle + 1, right);
+        mSort(arr, left, middle);
+        mSort(arr, middle + 1, right);
 
         // Fusionner les deux moitiés triées
-        merge(arr, left, middle, right);
+        mm(arr, left, middle, right);
     }
 }
 
-void afficherTableau(IndexFile* tableau, int tailleTableau) {
-    printf("\nTableau :\n");
-    //printf("%p",tableau[0].Pblock);
-    for (int i = 0; i < tailleTableau; i++) {
-    	if(i>=0&&i<=9){
-    	printf("Index 0%d : ID = %s, PBlock: %p\n", i, tableau[i].id,tableau[i].Pblock);
-		}else{
-        printf("Index %d : ID = %s, PBlock: %p\n", i, tableau[i].id,tableau[i].Pblock);}
+void merge(Contact arr[], int left, int mid, int right) {//not_same
+    int i, j, k;
+    int n1 = mid - left + 1;
+    int n2 = right - mid;
+
+    // Create temporary arrays
+    Contact L[n1], R[n2];
+
+    // Copy data to temporary arrays L[] and R[]
+    for (i = 0; i < n1; i++)
+        L[i] = arr[left + i];
+    for (j = 0; j < n2; j++)
+        R[j] = arr[mid + 1 + j];
+
+    // Merge the temporary arrays back into arr[left..right]
+    i = 0;
+    j = 0;
+    k = left;
+    while (i < n1 && j < n2) {
+        // Compare based on the iD field, adjust as needed
+        if (L[i].iD <= R[j].iD) {
+            arr[k] = L[i];
+            i++;
+        } else {
+            arr[k] = R[j];
+            j++;
+        }
+        k++;
+    }
+
+    // Copy the remaining elements of L[], if there are any
+    while (i < n1) {
+        arr[k] = L[i];
+        i++;
+        k++;
+    }
+
+    // Copy the remaining elements of R[], if there are any
+    while (j < n2) {
+        arr[k] = R[j];
+        j++;
+        k++;
+    }
+}
+
+void mergeSort(Contact* arr, int left, int right) {//not_same
+    if (left < right) {
+        // Same as (left+right)/2, but avoids overflow for large left and right
+        int mid = left + (right - left) / 2;
+
+        // Sort first and second halves
+        mergeSort(arr, left, mid);
+        mergeSort(arr, mid + 1, right);
+
+        // Merge the sorted halves
+        merge(arr, left, mid, right);
+    }
+}
+
+
+
+Contact* BinFile_to_tab(int* tailleTableau) {//not-same
+	
+    FILE *file = fopen("Contacts.bin", "rb");
+    Contact tempContact;
+    int deleted;
+    if (file != NULL) {
+        *tailleTableau = 0; // Initialiser la taille du tableau
+        while (fscanf(file, "%d,%8s,%30s,%10s,%30s,%250s", &deleted,
+              tempContact.iD, tempContact.name,
+              tempContact.phoneNumber, tempContact.email,
+              tempContact.otherInfo) == 6) {
+   		 (*tailleTableau)++;
+            if(deleted==0)
+                tempContact.isDeleted=false;
+            else
+                tempContact.isDeleted=true;
+        }
+        
+        rewind(file); // Rembobiner le fichier
+        // Allouer de la mémoire pour le tableau
+        Contact* tableau = (Contact*)malloc((*tailleTableau) * sizeof(Contact));
+
+        if (tableau == NULL) {
+            fprintf(stderr, "Erreur d'allocation de mémoire\n");
+            exit(EXIT_FAILURE);
+        }
+        // Lire les données du fichier dans le tableau
+        for (int i = 0; i < *tailleTableau; i++) {
+           fscanf(file, "%d,", &deleted);
+            if(deleted==0)
+                tempContact.isDeleted=false;
+            else
+                tempContact.isDeleted=true; 
+			if (tempContact.isDeleted == 0) {
+    			fscanf(file, "%8s,%30s,%10s,%30s,%250s",
+          		 tableau[i].iD, tableau[i].name,
+         		  tableau[i].phoneNumber, tableau[i].email,
+           		tableau[i].otherInfo);
+			}
+		}
+
+        fclose(file); // Fermer le fichier
+        return tableau;
+    } else {
+        perror("Erreur lors de l'ouverture du fichier");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void Tab_To_FileBin(Contact* arr,int sizetab) {
+    FILE* fichier = fopen("Contacts_sorted.bin", "wb");
+    
+    if (fichier != NULL) {
+		char tmp[12];
+       for(int i=0;i<sizetab;i++){
+            fprintf(fichier, "%8s,%s,%s,%s,%s$",
+                arr[i].iD,arr[i].name,arr[i].phoneNumber, arr[i].email, arr[i].otherInfo);
+        }
+        fclose(fichier); 
+    } else {
+        perror("Erreur lors de l'ouverture du fichier");
     }
 }
 
@@ -158,8 +282,16 @@ IndexFile* IndexFile_to_tableau(int* tailleTableau) {
 void islam() {
     int sizetab = 0;
     IndexFile* ptab = IndexFile_to_tableau(&sizetab);
-    mergeSort(ptab, 0,sizetab-1);
+    mSort(ptab, 0,sizetab-1);
     Block *tmp = rechercheDichotomique(ptab, 0, sizetab - 1,"20000608");
     printf("%p\n",tmp);
+     sizetab = 0;
+    Contact* Ctab = BinFile_to_tab(&sizetab);
+    
+    mergeSort(Ctab,0,sizetab-1);
+    
+    Tab_To_FileBin(Ctab,sizetab);
+    
+    free(Ctab);
     libererTableau(ptab);
 }
