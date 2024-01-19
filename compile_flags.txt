@@ -1,0 +1,4 @@
+-Wall
+-L/usr/local/lib
+-I/usr/local/include
+-lfmt

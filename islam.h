@@ -15,6 +15,7 @@ typedef struct Block {
 typedef struct IndexFile {
     char id[10];
     Block* Pblock;
+    int offset;
     struct IndexFile* next;
 } IndexFile;
 typedef struct Contact {
@@ -176,9 +177,8 @@ void mergeSort(Contact* arr, int left, int right) {//not_same
 
 
 
-Contact* BinFile_to_tab(int* tailleTableau) {//not-same
+Contact* BinFile_to_tab(FILE *file,int* tailleTableau) {//not-same
 	
-    FILE *file = fopen("Contacts.bin", "rb");
     Contact tempContact;
     int deleted;
     if (file != NULL) {
@@ -197,6 +197,7 @@ Contact* BinFile_to_tab(int* tailleTableau) {//not-same
         rewind(file); // Rembobiner le fichier
         // Allouer de la mémoire pour le tableau
         Contact* tableau = (Contact*)malloc((*tailleTableau) * sizeof(Contact));
+        printf("taille de tableau: %d\n",*tailleTableau);
 
         if (tableau == NULL) {
             fprintf(stderr, "Erreur d'allocation de mémoire\n");
@@ -217,7 +218,6 @@ Contact* BinFile_to_tab(int* tailleTableau) {//not-same
 			}
 		}
 
-        fclose(file); // Fermer le fichier
         return tableau;
     } else {
         perror("Erreur lors de l'ouverture du fichier");
@@ -229,14 +229,13 @@ void Tab_To_FileBin(Contact* arr,int sizetab) {
     FILE* fichier = fopen("Contacts_sorted.bin", "wb");
     
     if (fichier != NULL) {
-		char tmp[12];
        for(int i=0;i<sizetab;i++){
-            fprintf(fichier, "%8s,%s,%s,%s,%s$",
+            fprintf(fichier, "%8s,%s,%s,%s,%s\n",
                 arr[i].iD,arr[i].name,arr[i].phoneNumber, arr[i].email, arr[i].otherInfo);
         }
         fclose(fichier); 
     } else {
-        perror("Erreur lors de l'ouverture du fichier");
+        printf("Erreur lors de l'ouverture du fichier");
     }
 }
 
@@ -252,7 +251,7 @@ IndexFile* IndexFile_to_tableau(int* tailleTableau) {
         *tailleTableau = 0; // Initialiser la taille du tableau
 
         // Compter le nombre d'éléments dans le fichier
-        while (fscanf(file, "%8s,%p\n", tmp.id, &tmp.Pblock) == 2) {
+        while (fscanf(file, "%8s,%p,%d\n", tmp.id, &tmp.Pblock,&tmp.offset) == 2) {
             (*tailleTableau)++;
         }
 
@@ -267,7 +266,7 @@ IndexFile* IndexFile_to_tableau(int* tailleTableau) {
 
         // Lire les données du fichier dans le tableau
         for (int i = 0; i < *tailleTableau; i++) {
-            fscanf(file, "%8s,%p\n", tableau[i].id, &tableau[i].Pblock);
+            fscanf(file, "%8s,%p,%d\n", tableau[i].id, &tableau[i].Pblock,&tableau[i].offset);
         }
 
         fclose(file); // Fermer le fichier
@@ -279,14 +278,14 @@ IndexFile* IndexFile_to_tableau(int* tailleTableau) {
 }
 
 
-void islam() {
+void islam(FILE *file,FILE *indexFile) {
     int sizetab = 0;
     IndexFile* ptab = IndexFile_to_tableau(&sizetab);
     mSort(ptab, 0,sizetab-1);
     Block *tmp = rechercheDichotomique(ptab, 0, sizetab - 1,"20000608");
     printf("%p\n",tmp);
      sizetab = 0;
-    Contact* Ctab = BinFile_to_tab(&sizetab);
+    Contact* Ctab = BinFile_to_tab(file,&sizetab);
     
     mergeSort(Ctab,0,sizetab-1);
     
