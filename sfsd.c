@@ -211,7 +211,7 @@ void Tab_To_FileBin(Contact* arr,int sizetab) {
     if (fichier != NULL) {
 		char tmp[12];
        for(int i=0;i<=sizetab-1;i++){
-    
+    	sprintf(tmp,"%d",arr[i].iD);
             fprintf(fichier, "%08s,%s,%s,%s,%s$",
                     tmp,arr[i].name,arr[i].phoneNumber, arr[i].email, arr[i].otherInfo);
         }
