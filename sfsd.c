@@ -158,7 +158,71 @@ void mergeSort(Contact *arr, int left, int right) { // not_same
     merge(arr, left, mid, right);
   }
 }
+/*
+Contact* BinFile_to_tab(int* tailleTableau) {//not-same
+	
+    FILE *file = fopen("Contacts.bin", "rb");
+    Contact tempContact;
+    int tmp;
 
+    if (file != NULL) {
+        *tailleTableau = 0; // Initialiser la taille du tableau
+    	
+        while (fscanf(file, "%d,%08d,%30s,%10s,%30s,%250s", &tmp,
+              &tempContact.iD, tempContact.name,
+              tempContact.phoneNumber, tempContact.email,
+              tempContact.otherInfo) == 6) {
+   		 (*tailleTableau)++;
+			}
+			printf("taille tab : %d",*tailleTableau);
+        
+        rewind(file); // Rembobiner le fichier
+        // Allouer de la mémoire pour le tableau
+        Contact* tableau = (Contact*)malloc((*tailleTableau) * sizeof(Contact));
+
+        if (tableau == NULL) {
+            fprintf(stderr, "Erreur d'allocation de mémoire\n");
+            exit(EXIT_FAILURE);
+        }
+        // Lire les données du fichier dans le tableau
+        for (int i = 0; i < *tailleTableau; i++) {
+           fscanf(file, "%d,", &tempContact.isDeleted);
+        
+			if (tempContact.isDeleted == 0) {
+				
+    			fscanf(file, "%08d,%30s,%10s,%30s,%250s",
+          		 &tableau[i].iD, tableau[i].name,
+         		  tableau[i].phoneNumber, tableau[i].email,
+           		tableau[i].otherInfo);
+			}
+		}
+
+        fclose(file); // Fermer le fichier
+        return tableau;
+    } else {
+        perror("Erreur lors de l'ouverture du fichier");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void Tab_To_FileBin(Contact* arr,int sizetab) {
+    FILE* fichier = fopen("Contacts_sorted.bin", "wb");
+    
+    if (fichier != NULL) {
+		char tmp[12];
+       for(int i=0;i<=sizetab-1;i++){
+       		//sprintf(tmp, "%d",arr[i].iD);
+       		//printf("\n%d\n",arr[i].iD);
+            fprintf(fichier, "%08s,%s,%s,%s,%s$",
+                    tmp,arr[i].name,arr[i].phoneNumber, arr[i].email, arr[i].otherInfo);
+        }
+        fclose(fichier); 
+    } else {
+        perror("Erreur lors de l'ouverture du fichier");
+    }
+}
+
+*/
 Contact *BinFile_to_tab(FILE *file, int *tailleTableau) { // not-same
 
   Contact tempContact;
