@@ -29,7 +29,7 @@ typedef struct IndexFile {
 typedef struct Contact {
   int x;
   // j'ai ajouter 1 a chaque taille de string pour le caractere de fin de chaine
-  int iD;
+  char iD[9];
   char name[31];
   char phoneNumber[11];
   char email[31];
@@ -158,16 +158,27 @@ void mergeSort(Contact *arr, int left, int right) { // not_same
     merge(arr, left, mid, right);
   }
 }
-Contact *BinFile_to_tab(int *tailleTableau) { // not-same
+void Tab_To_FileBin(FILE *fichier, Contact *arr, int sizetab) {
+  rewind(fichier);
 
-  FILE *file = fopen("Contacts.bin", "rb");
+  if (fichier != NULL) {
+    for (int i = 0; i <= sizetab - 1; i++) {
+      fprintf(fichier, "%1d,%8s,%s,%s,%s,%s\n", arr[i].x, arr[i].iD,
+              arr[i].name, arr[i].phoneNumber, arr[i].email, arr[i].otherInfo);
+    }
+    fclose(fichier);
+  } else {
+    perror("Erreur lors de l'ouverture du fichier");
+  }
+}
+Contact *BinFile_to_tab(FILE *file, int *tailleTableau) { // not-same
+
   Contact tempContact;
-
+  tempContact.otherInfo = malloc(251 * sizeof(char));
+  rewind(file);
   if (file != NULL) {
-    *tailleTableau = 0; // Initialiser la taille du tableau
-
-    while (fscanf(file, "%1d,%08d,%30s,%10s,%30s,%250s", &tempContact.x,
-                  &tempContact.iD, tempContact.name, tempContact.phoneNumber,
+    while (fscanf(file, "%d,%8s,%30s,%10s,%30s,%250s", &tempContact.x,
+                  tempContact.iD, tempContact.name, tempContact.phoneNumber,
                   tempContact.email, tempContact.otherInfo) == 6) {
       (*tailleTableau)++;
     }
@@ -176,132 +187,45 @@ Contact *BinFile_to_tab(int *tailleTableau) { // not-same
     rewind(file); // Rembobiner le fichier
     // Allouer de la mémoire pour le tableau
     Contact *tableau = (Contact *)malloc((*tailleTableau) * sizeof(Contact));
-
-    if (tableau == NULL) {
-      fprintf(stderr, "Erreur d'allocation de mémoire\n");
-      exit(EXIT_FAILURE);
-    }
-    // Lire les données du fichier dans le tableau
     for (int i = 0; i < *tailleTableau; i++) {
+      tableau[i].otherInfo = malloc(251 * sizeof(char));
+    }
 
-      fscanf(file, "%1d,%08d,%30s,%10s,%30s,%250s", &tableau[i].x,
-             &tableau[i].iD, tableau[i].name, tableau[i].phoneNumber,
+    for (int i = 0; i < *tailleTableau; i++) {
+      fscanf(file, "%1d,%08s,%30s,%10s,%30s,%250s", &tableau[i].x,
+             tableau[i].iD, tableau[i].name, tableau[i].phoneNumber,
              tableau[i].email, tableau[i].otherInfo);
     }
+    Tab_To_FileBin(file, tableau, *tailleTableau);
     return tableau;
     perror("Erreur lors de l'ouverture du fichier");
     exit(EXIT_FAILURE);
   }
+  return NULL;
 }
 
-void Tab_To_FileBin(Contact *arr, int sizetab) {
-  FILE *fichier = fopen("Contacts_sorted.bin", "wb");
+// void Supp_logique(Contact *arr, int sizetab) {
+//   for (int i = 0; i < sizetab; i++) {
+//     printf("%s\n", arr[i].iD);
+//   }
+//   char id[10];
+//   printf("\ndonner le ID de contacts que vous voulez supprimer :");
+//   scanf("%s", id);
+//   for (int i = 0; i < sizetab; i++) {
+//     if (!strcmp(id, arr[i].iD)) {
+//       arr[i].x = 1;
+//       printf("le contact avec iD: %s a ete supprime avec succes", id);
+//       Tab_To_FileBin(arr, sizetab);
+//       return;
+//     }
+//   }
+//   printf("le contact Le contact avec iD: %8s n'existe pas !", id);
+// }
 
-  if (fichier != NULL) {
-    char tmp[12];
-    for (int i = 0; i <= sizetab - 1; i++) {
-      sprintf(tmp, "%d", arr[i].iD);
-      fprintf(fichier, "%1d,%08s,%s,%s,%s,%s$", arr[i].x, tmp, arr[i].name,
-              arr[i].phoneNumber, arr[i].email, arr[i].otherInfo);
-    }
-    fclose(fichier);
-  } else {
-    perror("Erreur lors de l'ouverture du fichier");
-  }
-}
-
-void Supp_logique(Contact *arr, int sizetab) {
-
-  int id;
-  printf("\ndonner le ID de contacts que vous voulez supprimer :");
-  scanf("%d", &id);
-  for (int i = 0; i < sizetab; i++) {
-    if (arr[i].iD == id) {
-      arr[i].x = 1;
-      printf("Le contact avec iD: %d a ete supprime avec succes", id);
-      Tab_To_FileBin(arr, sizetab);
-      return;
-    }
-  }
-  printf("le contact Le contact avec iD: %d n'existe pas !", id);
-}
-/*
-Contact* BinFile_to_tab(int* tailleTableau) {//not-same
-
-
-    FILE *file = fopen("Contacts.bin", "rb");
-    Contact tempContact;
-
-    if (file != NULL) {
-        *tailleTableau = 0; // Initialiser la taille du tableau
-
-        while (fscanf(file, "%1d,%08s,%30s,%10s,%30s,%250s", &tempContact.x,
-              tempContact.iD, tempContact.name,
-              tempContact.phoneNumber, tempContact.email,
-              tempContact.otherInfo) == 6) {
-                 (*tailleTableau)++;
-                        }
-                        printf("taille tab : %d\n",*tailleTableau);
-
-        rewind(file); // Rembobiner le fichier
-        // Allouer de la mémoire pour le tableau
-        Contact* tableau = (Contact*)malloc((*tailleTableau) * sizeof(Contact));
-
-        if (tableau == NULL) {
-            fprintf(stderr, "Erreur d'allocation de mémoire\n");
-            exit(EXIT_FAILURE);
-        }
-        // Lire les données du fichier dans le tableau
-        for (int i = 0; i < *tailleTableau; i++) {
-
-                        fscanf(file,
-"%1d,%08s,%30s,%10s,%30s,%250s",&tableau[i].x ,tableau[i].iD, tableau[i].name,
-                          tableau[i].phoneNumber, tableau[i].email,
-                        tableau[i].otherInfo);
-                        printf("%8s\n",tableau[i].iD);
-                        }
-                 return tableau;
-        perror("Erreur lors de l'ouverture du fichier");
-        exit(EXIT_FAILURE);
-    }
-}
-
-void Tab_To_FileBin(Contact* arr,int sizetab) {
-    FILE* fichier = fopen("Contacts_sorted.bin", "wb");
-
-    if (fichier != NULL) {
-                //char tmp[12];
-       for(int i=0;i<=sizetab-1;i++){
-        //sprintf(tmp,"%d",arr[i].iD);
-            fprintf(fichier, "%1d,%08s,%s,%s,%s,%s$",
-                    arr[i].x,arr[i].iD,arr[i].name,arr[i].phoneNumber,
-arr[i].email, arr[i].otherInfo);
-        }
-        fclose(fichier);
-    } else {
-        perror("Erreur lors de l'ouverture du fichier");
-    }
-}
-
-void Supp_logique(Contact* arr,int sizetab){
-
-        char id[10];
-        printf("\ndonner le ID de contacts que vous voulez supprimer :");
-        scanf("%s",id);
-        for(int i=0;i<sizetab;i++){
-                if(!strcmp(id,arr[i].iD)){
-                        arr[i].x=1;
-                        printf("Le contact avec iD: %8s a ete supprime avec
-succes",id); Tab_To_FileBin(arr,sizetab); return;
-                }
-        }
-        printf("le contact Le contact avec iD: %8s n'existe pas !",id);
-}
-*/
 void libererTableau(IndexFile *tableau) { free(tableau); }
 
-IndexFile *IndexFile_to_tableau(int *tailleTableau) {
-  FILE *file = fopen("Contact_index.bin", "r");
+IndexFile *IndexFile_to_tableau(FILE *file, int *tailleTableau) {
+  rewind(file);
   IndexFile tmp;
 
   if (file != NULL) {
@@ -384,7 +308,7 @@ Contact *createContact(char ID[9]) {
   }
   strcpy(contact->email, email);
 
-  contact->isDeleted = false;
+  contact->x = false;
   strcpy(contact->iD, ID);
   free(name);
   free(phoneNumber);
@@ -415,11 +339,11 @@ void insertContactinBlock(FileInfo *fileinfo, Contact *contact) {
   while (block->nextBlock != NULL) {
     block = block->nextBlock;
   }
-  int contactSize = snprintf(NULL, 0, "%d,%s,%s,%s,%s,%s$", contact->isDeleted,
+  int contactSize = snprintf(NULL, 0, "%d,%s,%s,%s,%s,%s$", contact->x,
                              contact->iD, contact->name, contact->phoneNumber,
                              contact->email, contact->otherInfo);
   char *contactString = malloc(contactSize + 1);
-  if (contact->isDeleted) {
+  if (contact->x) {
     sprintf(contactString, "%d,%s,%s,%s,%s,%s$", 1, contact->iD, contact->name,
             contact->phoneNumber, contact->email, contact->otherInfo);
   } else {
@@ -452,18 +376,19 @@ void insertContactinBlock(FileInfo *fileinfo, Contact *contact) {
 
 void insertContactinFile(FILE *file, Contact *contact) {
 
-  int contactSize = snprintf(NULL, 0, "%d,%s,%s,%s,%s,%s$", contact->isDeleted,
+  fseek(file, 0, SEEK_END);
+  int contactSize = snprintf(NULL, 0, "%d,%s,%s,%s,%s,%s$", contact->x,
                              contact->iD, contact->name, contact->phoneNumber,
                              contact->email, contact->otherInfo);
   char *contactString = malloc(contactSize + 1);
-  if (contact->isDeleted) {
+  if (contact->x) {
     sprintf(contactString, "%d,%s,%s,%s,%s,%s$", 1, contact->iD, contact->name,
             contact->phoneNumber, contact->email, contact->otherInfo);
   } else {
     sprintf(contactString, "%d,%s,%s,%s,%s,%s$", 0, contact->iD, contact->name,
             contact->phoneNumber, contact->email, contact->otherInfo);
   }
-  if (contact->isDeleted == false)
+  if (contact->x == false)
     fprintf(file, "%d,%s,%s,%s,%s,%s\n", 0, contact->iD, contact->name,
             contact->phoneNumber, contact->email, contact->otherInfo);
   else
@@ -546,14 +471,21 @@ void CreateIndexFileNonDense(FileInfo *fileinfo, FILE *file) {
 void CreateIndexFile(FileInfo *fileinfo, FILE *file) {
   Block *block = fileinfo->firstBlock;
   char *id = malloc(9 * sizeof(char));
+  int deleted = 0;
   for (int i = 2; i < 10; i++) {
     id[i - 2] = fileinfo->firstBlock->Contacts[i];
   }
-  fprintf(file, "%s,%p,%d\n", id, block, 0);
+  if (fileinfo->firstBlock->Contacts[0] == '0')
+    fprintf(file, "%s,%p,%d\n", id, block, 0);
   while (block != NULL) {
     bool move = true;
     for (int j = 0; j < block->ocupiedSpace; j++) {
+      deleted = 0;
       if (block->Contacts[j] == '$') {
+        if (block->Contacts[j + 1] == '1') {
+          deleted = 1;
+          break;
+        }
         int temp = j;
         if ((block->nextBlock == NULL) && (j + 1 >= block->ocupiedSpace))
           break;
@@ -590,7 +522,8 @@ void CreateIndexFile(FileInfo *fileinfo, FILE *file) {
             id[8] = '\0';
           }
         }
-        fprintf(file, "%s,%p,%d\n", id, block, temp);
+        if (!deleted)
+          fprintf(file, "%s,%p,%d\n", id, block, temp);
       }
     }
     if (move)
@@ -624,7 +557,7 @@ Contact *createContactInput(FileInfo *fileinfo) {
   strcpy(contact->name, name);
   strcpy(contact->phoneNumber, phoneNumber);
   strcpy(contact->email, email);
-  contact->isDeleted = false;
+  contact->x = false;
   strcpy(contact->iD, ID);
   free(name);
   free(phoneNumber);
@@ -633,19 +566,22 @@ Contact *createContactInput(FileInfo *fileinfo) {
   free(ID);
   return contact;
 }
-int deleteContact(FileInfo *fileinfo) {
+int deleteContact(FileInfo *fileinfo, FILE *index) {
   char ID[9];
   char tmp[9];
-  Block *tmp2;
-  int temp3;
+  Block *tmp2 = malloc(sizeof(Block));
+  int temp3 = 0;
 
-  FILE *index = fopen("Contact_index.bin", "rw");
+  rewind(index);
   if (index == NULL) {
     fprintf(stderr, "Error opening file.\n");
     return 1;
   }
 
   contactArray *contacts = malloc(fileinfo->contactSize * sizeof(contactArray));
+  for (int i = 0; i < fileinfo->contactSize; i++) {
+    contacts[i].block = malloc(sizeof(Block));
+  }
   if (contacts == NULL) {
     fprintf(stderr, "Memory allocation error.\n");
     fclose(index);
@@ -653,17 +589,19 @@ int deleteContact(FileInfo *fileinfo) {
   }
 
   int ContactLen = 0;
-  while (fscanf(index, "%8s,%p,%d\n", tmp, &tmp2, &temp3) == 3 &&
+  while (fscanf(index, "%8[^,],%p,%d\n", tmp, &tmp2, &temp3) == 3 &&
          ContactLen < fileinfo->contactSize) {
-    strcpy(contacts[ContactLen].ID, tmp);
-    printf("%s\n", contacts[ContactLen].ID);
-    contacts[ContactLen].block = tmp2;
-    contacts[ContactLen].offset = temp3;
-    ContactLen++;
+    if ((tmp2->Contacts[temp3 + 1] == '0') || (tmp2->Contacts[temp3] == '0')) {
+      printf("%s\n", tmp);
+      strcpy(contacts[ContactLen].ID, tmp);
+      contacts[ContactLen].block = tmp2;
+      contacts[ContactLen].offset = temp3;
+      ContactLen++;
+    }
   }
 
   printf("Enter the ID of the contact you want to delete: ");
-  scanf("%8s", ID);
+  scanf("%s", ID);
 
   printf("\n");
 
@@ -672,7 +610,12 @@ int deleteContact(FileInfo *fileinfo) {
     if (strcmp(ID, contacts[j].ID) == 0) {
       printf("Contact found\n");
       contactFound = 1;
-      contacts[j].block->Contacts[contacts[j].offset + 1] = '1';
+      if (contacts[j].offset == 0) {
+        contacts[j].block->Contacts[contacts[j].offset] = '1';
+      } else {
+        contacts[j].block->Contacts[contacts[j].offset + 1] = '1';
+      }
+      CreateIndexFile(fileinfo, index);
     }
   }
 
@@ -680,28 +623,29 @@ int deleteContact(FileInfo *fileinfo) {
     printf("Contact not found\n");
   }
   // rewrite the index file
-  CreateIndexFile(fileinfo, index);
+  // CreateIndexFile(fileinfo, index);
   // TODO: rewrite the contact file with the changes
   // from block to file
   free(contacts);
-  fclose(index);
-
+  // free(tmp2);
   return 0;
 }
-void search(char *id) {
+void search(char *id, FILE *index) {
   int sizetab = 0;
-  IndexFile *ptab = IndexFile_to_tableau(&sizetab);
+  IndexFile *ptab = IndexFile_to_tableau(index, &sizetab);
   mSort(ptab, 0, sizetab - 1);
   int offset = 0;
   Block *tmp = rechercheDichotomique(ptab, 0, sizetab - 1, id, &offset);
+  printf("was found in block %p offset %d\n", tmp, offset);
   libererTableau(ptab);
 }
-void CreatedSortedContacts(FILE *file, FILE *indexFile, FILE *sortedFile) {
-  // FIX:error here i don't know why
-  int sizetab = 0;
-  Contact *Ctab = BinFile_to_tab(file, &sizetab);
-  mergeSort(Ctab, 0, sizetab - 1);
-  Tab_To_FileBin(Ctab, sizetab, sortedFile);
+
+void CreatedSortedContacts(FILE *contactFile, FILE *sorted) {
+  int *sizetab = malloc(sizeof(int));
+  *sizetab = 0;
+  Contact *Ctab = BinFile_to_tab(contactFile, sizetab);
+  mergeSort(Ctab, 0, *sizetab - 1);
+  Tab_To_FileBin(sorted, Ctab, *sizetab);
   free(Ctab);
 }
 
@@ -714,19 +658,18 @@ int main(int argc, char *argv[]) {
                                      SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH,
                                      WINDOW_HEIGHT, SDL_WINDOW_SHOWN);
   SDL_Renderer *ren = SDL_CreateRenderer(win, -1, SDL_RENDERER_ACCELERATED);
-  FILE *ContactFile = fopen("Contacts.bin", "w+");
+  FILE *ContactFile = fopen("Contacts.bin", "rb+");
+  FILE *indexFile = fopen("Contact_index.bin", "rb+");
+  FILE *indexFile2 = fopen("Contacts_index_nonDense.bin", "rb+");
+  FILE *sorted = fopen("Contacts_sorted.bin", "rb+");
   FileInfo *fileinfo = malloc(sizeof(FileInfo));
-  fileinfo->contactSize = 10;
+  fileinfo->contactSize = 11;
   fileinfo->firstBlock = NULL;
   fileinfo->totalSize = 0;
   fillFile(fileinfo, ContactFile);
-  FILE *indexFile = fopen("Contact_index.bin", "w+");
   CreateIndexFile(fileinfo, indexFile);
-  FILE *indexFile2 = fopen("./Contacts_index_nonDense.bin", "w+");
   CreateIndexFileNonDense(fileinfo, indexFile2);
-  fclose(indexFile);
-  FILE *sortedFile = fopen("Contacts_sorted.bin", "w+");
-  CreatedSortedContacts(ContactFile, indexFile, sortedFile);
+  CreatedSortedContacts(ContactFile, sorted);
   SDL_RenderClear(ren);
   bool running = true;
   SDL_Event event;
@@ -746,14 +689,14 @@ int main(int argc, char *argv[]) {
           fileinfo->contactSize++;
         }
         if (event.key.keysym.sym == SDLK_BACKSPACE) {
-          deleteContact(fileinfo);
+          deleteContact(fileinfo, indexFile);
         }
         if (event.key.keysym.sym == SDLK_r) {
           char id[9];
           printf("Enter the ID of the contact you want to search: ");
           scanf("%8s", id);
           printf("\n");
-          search(id);
+          search(id, indexFile);
         }
       }
     }
@@ -802,7 +745,7 @@ int main(int argc, char *argv[]) {
             rgb->Red = 0;
             rgb->Green = 0;
             rgb->Blue = 0;
-          } else {
+          } else if (block->Contacts[h + 1] == '0') {
             rgb->Red = rand() % 255;
             rgb->Green = rand() % 255;
             rgb->Blue = rand() % 255;
@@ -841,5 +784,8 @@ int main(int argc, char *argv[]) {
   SDL_Quit();
   free(fileinfo);
   fclose(ContactFile);
+  fclose(indexFile);
+  fclose(indexFile2);
+  fclose(sorted);
   return 0;
 }
