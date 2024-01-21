@@ -160,21 +160,22 @@ void mergeSort(Contact *arr, int left, int right) { // not_same
 }
 /*
 Contact* BinFile_to_tab(int* tailleTableau) {//not-same
+
 	
     FILE *file = fopen("Contacts.bin", "rb");
     Contact tempContact;
-    int tmp;
 
     if (file != NULL) {
         *tailleTableau = 0; // Initialiser la taille du tableau
     	
-        while (fscanf(file, "%d,%08d,%30s,%10s,%30s,%250s", &tmp,
+        while (fscanf(file, "%1d,%08d,%30s,%10s,%30s,%250s", &tempContact.x,
               &tempContact.iD, tempContact.name,
               tempContact.phoneNumber, tempContact.email,
               tempContact.otherInfo) == 6) {
    		 (*tailleTableau)++;
+   		 
 			}
-			printf("taille tab : %d",*tailleTableau);
+			printf("taille tab : %d\n",*tailleTableau);
         
         rewind(file); // Rembobiner le fichier
         // Allouer de la mémoire pour le tableau
@@ -186,20 +187,14 @@ Contact* BinFile_to_tab(int* tailleTableau) {//not-same
         }
         // Lire les données du fichier dans le tableau
         for (int i = 0; i < *tailleTableau; i++) {
-           fscanf(file, "%d,", &tempContact.isDeleted);
-        
-			if (tempContact.isDeleted == 0) {
-				
-    			fscanf(file, "%08d,%30s,%10s,%30s,%250s",
-          		 &tableau[i].iD, tableau[i].name,
+
+    			fscanf(file, "%1d,%08d,%30s,%10s,%30s,%250s",&tableau[i].x
+          		 ,&tableau[i].iD, tableau[i].name,
          		  tableau[i].phoneNumber, tableau[i].email,
            		tableau[i].otherInfo);
-			}
-		}
-
-        fclose(file); // Fermer le fichier
-        return tableau;
-    } else {
+           		
+			}            
+		 return tableau;
         perror("Erreur lors de l'ouverture du fichier");
         exit(EXIT_FAILURE);
     }
@@ -212,14 +207,31 @@ void Tab_To_FileBin(Contact* arr,int sizetab) {
 		char tmp[12];
        for(int i=0;i<=sizetab-1;i++){
     	sprintf(tmp,"%d",arr[i].iD);
-            fprintf(fichier, "%08s,%s,%s,%s,%s$",
-                    tmp,arr[i].name,arr[i].phoneNumber, arr[i].email, arr[i].otherInfo);
+            fprintf(fichier, "%1d,%08s,%s,%s,%s,%s$",
+                    arr[i].x,tmp,arr[i].name,arr[i].phoneNumber, arr[i].email, arr[i].otherInfo);
         }
         fclose(fichier); 
     } else {
         perror("Erreur lors de l'ouverture du fichier");
     }
 }
+
+void Supp_logique(Contact* arr,int sizetab){
+	
+	int id;
+	printf("\ndonner le ID de contacts que vous voulez supprimer :");
+	scanf("%d",&id);
+	for(int i=0;i<sizetab;i++){
+		if(arr[i].iD==id){
+			arr[i].x=1;
+			printf("Le contact avec iD: %d a ete supprime avec succes",id);
+			Tab_To_FileBin(arr,sizetab);
+			return;
+		}
+	}
+	printf("le contact Le contact avec iD: %d n'existe pas !",id);
+}
+
 */
 Contact *BinFile_to_tab(FILE *file, int *tailleTableau) { // not-same
 
