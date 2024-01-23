@@ -159,7 +159,7 @@ void mergeSort(Contact *arr, int left, int right) { // not_same
   }
 }
 void Tab_To_FileBin(FILE *fichier, Contact *arr, int sizetab) {
-  rewind(fichier);
+  fseek(fichier, 0, SEEK_END);
 
   if (fichier != NULL) {
     for (int i = 0; i <= sizetab - 1; i++) {
@@ -182,7 +182,6 @@ Contact *BinFile_to_tab(FILE *file, int *tailleTableau) { // not-same
                   tempContact.email, tempContact.otherInfo) == 6) {
       (*tailleTableau)++;
     }
-    printf("taille tab : %d\n", *tailleTableau);
 
     rewind(file); // Rembobiner le fichier
     // Allouer de la mémoire pour le tableau
@@ -204,23 +203,23 @@ Contact *BinFile_to_tab(FILE *file, int *tailleTableau) { // not-same
   return NULL;
 }
 
-// void Supp_logique(Contact *arr, int sizetab) {
-//   for (int i = 0; i < sizetab; i++) {
-//     printf("%s\n", arr[i].iD);
-//   }
-//   char id[10];
-//   printf("\ndonner le ID de contacts que vous voulez supprimer :");
-//   scanf("%s", id);
-//   for (int i = 0; i < sizetab; i++) {
-//     if (!strcmp(id, arr[i].iD)) {
-//       arr[i].x = 1;
-//       printf("le contact avec iD: %s a ete supprime avec succes", id);
-//       Tab_To_FileBin(arr, sizetab);
-//       return;
-//     }
-//   }
-//   printf("le contact Le contact avec iD: %8s n'existe pas !", id);
-// }
+void Supp_logique(FILE *contacts, Contact *arr, int sizetab) {
+  for (int i = 0; i < sizetab; i++) {
+    printf("%s\n", arr[i].iD);
+  }
+  char id[10];
+  printf("\ndonner le ID de contacts que vous voulez supprimer :");
+  scanf("%s", id);
+  for (int i = 0; i < sizetab; i++) {
+    if (!strcmp(id, arr[i].iD)) {
+      arr[i].x = 1;
+      printf("le contact avec iD: %s a ete supprime avec succes", id);
+      Tab_To_FileBin(contacts, arr, sizetab);
+      return;
+    }
+  }
+  printf("le contact Le contact avec iD: %8s n'existe pas !", id);
+}
 
 void libererTableau(IndexFile *tableau) { free(tableau); }
 
@@ -318,7 +317,7 @@ Contact *createContact(char ID[9]) {
   return contact;
 }
 
-void addBlock(FileInfo *fileinfo) {
+void allouerBlock(FileInfo *fileinfo) {
   Block *block = malloc(sizeof(Block));
   fileinfo->totalSize++;
   block->blockNumber = fileinfo->totalSize;
@@ -359,7 +358,7 @@ void insertContactinBlock(FileInfo *fileinfo, Contact *contact) {
       cpt++;
     }
     block->ocupiedSpace = blockSegments;
-    addBlock(fileinfo);
+    allouerBlock(fileinfo);
     block = block->nextBlock;
     for (int j = 0; j < len - cpt; j++) {
       block->Contacts[j] = contactString[j + cpt];
@@ -374,7 +373,7 @@ void insertContactinBlock(FileInfo *fileinfo, Contact *contact) {
   free(contactString);
 }
 
-void insertContactinFile(FILE *file, Contact *contact) {
+void EcrireDir(FILE *file, Contact *contact) {
 
   fseek(file, 0, SEEK_END);
   int contactSize = snprintf(NULL, 0, "%d,%s,%s,%s,%s,%s$", contact->x,
@@ -398,20 +397,21 @@ void insertContactinFile(FILE *file, Contact *contact) {
 }
 
 void fillFile(FileInfo *fileinfo, FILE *file) {
-  addBlock(fileinfo);
+  allouerBlock(fileinfo);
   for (int i = 0; i < fileinfo->contactSize; i++) {
     long iD = ((i + 1) * 10000019) % 100000000;
     char ID[9];
     sprintf(ID, "%08ld", iD);
     Contact *contact = createContact(ID);
     insertContactinBlock(fileinfo, contact);
-    insertContactinFile(file, contact);
+    EcrireDir(file, contact);
     free(contact->otherInfo);
     free(contact);
   }
 }
 void CreateIndexFileNonDense(FileInfo *fileinfo, FILE *file) {
   Block *block = fileinfo->firstBlock;
+  fseek(file, 0, SEEK_SET);
   char *id = malloc(9 * sizeof(char));
   for (int i = 2; i < 10; i++) {
     id[i - 2] = fileinfo->firstBlock->Contacts[i];
@@ -469,6 +469,7 @@ void CreateIndexFileNonDense(FileInfo *fileinfo, FILE *file) {
 }
 
 void CreateIndexFile(FileInfo *fileinfo, FILE *file) {
+  fseek(file, 0, SEEK_SET);
   Block *block = fileinfo->firstBlock;
   char *id = malloc(9 * sizeof(char));
   int deleted = 0;
@@ -685,11 +686,25 @@ int main(int argc, char *argv[]) {
         if (event.key.keysym.sym == SDLK_SPACE) {
           Contact *contact = createContactInput(fileinfo);
           insertContactinBlock(fileinfo, contact);
-          insertContactinFile(ContactFile, contact);
+          EcrireDir(ContactFile, contact);
+          CreateIndexFile(fileinfo, indexFile);
+          CreatedSortedContacts(ContactFile, sorted);
           fileinfo->contactSize++;
         }
         if (event.key.keysym.sym == SDLK_BACKSPACE) {
           deleteContact(fileinfo, indexFile);
+          CreateIndexFile(fileinfo, indexFile);
+        }
+        if (event.key.keysym.sym == SDLK_m) {
+          long iD = ((fileinfo->contactSize + 1) * 10000019) % 100000000;
+          char ID[9];
+          sprintf(ID, "%08ld", iD);
+          Contact *contact = createContact(ID);
+          insertContactinBlock(fileinfo, contact);
+          EcrireDir(ContactFile, contact);
+          CreateIndexFile(fileinfo, indexFile);
+          CreatedSortedContacts(ContactFile, sorted);
+          fileinfo->contactSize++;
         }
         if (event.key.keysym.sym == SDLK_r) {
           char id[9];
@@ -734,9 +749,15 @@ int main(int argc, char *argv[]) {
     RGB *rgb = malloc(sizeof(RGB));
     Block *block = fileinfo->firstBlock;
     srand(1);
-    rgb->Red = rand() % 255;
-    rgb->Green = rand() % 255;
-    rgb->Blue = rand() % 255;
+    if (block->Contacts[0] == '0') {
+      rgb->Red = rand() % 255;
+      rgb->Green = rand() % 255;
+      rgb->Blue = rand() % 255;
+    } else if (block->Contacts[0] == '1') {
+      rgb->Red = 0;
+      rgb->Green = 0;
+      rgb->Blue = 0;
+    }
     int cpt = 0;
     while (k < fileinfo->totalSize) {
       for (int h = 0; h < blockSegments; h++) {
@@ -750,6 +771,10 @@ int main(int argc, char *argv[]) {
             rgb->Green = rand() % 255;
             rgb->Blue = rand() % 255;
             cpt++;
+          } else {
+            rgb->Red = 0;
+            rgb->Green = 0;
+            rgb->Blue = 0;
           }
           if (cpt == fileinfo->contactSize) {
             SDL_Rect rect = {i * BlockWidth,
