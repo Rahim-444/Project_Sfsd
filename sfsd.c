@@ -469,7 +469,7 @@ void CreateIndexFileNonDense(FileInfo *fileinfo, FILE *file) {
 }
 
 void CreateIndexFile(FileInfo *fileinfo, FILE *file) {
-  fseek(file, 0, SEEK_SET);
+  rewind(file);
   Block *block = fileinfo->firstBlock;
   char *id = malloc(9 * sizeof(char));
   int deleted = 0;
@@ -524,7 +524,7 @@ void CreateIndexFile(FileInfo *fileinfo, FILE *file) {
           }
         }
         if (!deleted)
-          fprintf(file, "%s,%p,%d\n", id, block, temp);
+          fprintf(file, "%8s,%p,%d\n", id, block, temp);
       }
     }
     if (move)
@@ -702,7 +702,6 @@ int main(int argc, char *argv[]) {
           Contact *contact = createContact(ID);
           insertContactinBlock(fileinfo, contact);
           EcrireDir(ContactFile, contact);
-          CreateIndexFile(fileinfo, indexFile);
           CreatedSortedContacts(ContactFile, sorted);
           fileinfo->contactSize++;
         }
