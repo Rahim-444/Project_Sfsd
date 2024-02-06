@@ -1,4 +1,4 @@
-## **Gestion des Contacts**
+# **Gestion des Contacts**
 
 # **Projet de TP (Rapport):**
 
@@ -31,7 +31,7 @@ Notre projet consiste à mettre en œuvre un système de gestion des contacts en
 
 • **String.h:** La bibliothèque \<string.h\> offre des outils essentiels pour travailler avec des chaînes de caractères en langage C, couvrant des opérations telles que la détermination de la longueur, la copie, la concaténation, la comparaison et la division en **"tokens"**. Ces fonctions sont largement utilisées dans le développement d'applications C qui impliquent la manipulation de chaînes de caractères.
 
-## **2.3** ** Exemple de test de TP:**
+# **2.3** ** Exemple de test de TP:**
 
 1. **Après l'exécution de programme:**
 
