@@ -6,7 +6,8 @@
 
 Manipulation sur gestion des contacts en langage C. **binôme** **:**
 
-• **Belkacemi Abderrahim –** (Rahim444)
+• **Belkacemi Abderrahim –** (Rahim444) 
+https://www.linkedin.com/in/belkacemi-abderrahim-80320a184/
 
 • **Aoudia Nour Islam**
 
