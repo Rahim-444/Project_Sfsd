@@ -3,7 +3,7 @@
 
 dependencies:  **SDL2** , **gcc**.
 
-1. **Thème:**
+Thème:
 
 Manipulation sur gestion des contacts en langage C. **binôme** **:**
 
