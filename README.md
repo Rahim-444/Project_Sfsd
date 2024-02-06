@@ -60,18 +60,18 @@ Notre projet consiste à mettre en œuvre un système de gestion des contacts en
 
 1. **Fichier de contact:**
 
-![](./assets/image7.png)
+![](./assets/image8.png)
 
 1. **Fichier de contacts triée:**
 
-![](./assets/image8.png)
+![](./assets/image10.png)
 
 1. **Fichier de table d'index (dense):**
 
-![](./assets/image9.png)
+![](./assets/image7.png)
 
 1. **Fichier table d'index (non dense):**
 
-![](./assets/image10.png)
+![](./assets/image9.png)
 
 
