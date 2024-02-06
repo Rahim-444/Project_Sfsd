@@ -1,7 +1,7 @@
 # **Gestion des Contacts**
 # **Projet de TP (Rapport):**
 
-# dependencies:  **SDL2** , **gcc**.
+dependencies:  **SDL2** , **gcc**.
 
 1. **Thème:**
 
