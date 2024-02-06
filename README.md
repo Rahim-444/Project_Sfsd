@@ -1,6 +1,7 @@
 # **Gestion des Contacts**
-
 # **Projet de TP (Rapport):**
+
+# dependencies:  **SDL2** , **gcc**.
 
 1. **Thème:**
 
@@ -28,8 +29,6 @@ Notre projet consiste à mettre en œuvre un système de gestion des contacts en
 # **2.2.** **Les différents modules implémentés:**
 
 • **SDL2/SDL.h:** La bibliothèque \<SDL2/SDL.h\> en langage C, connue sous le nom de SDL ( **Simple DirectMedia Layer** ), offre des fonctionnalités puissantes pour le développement multimédia. Elle permet la création de fenêtres graphiques, la gestion de l'entrée utilisateur, le rendu graphique, la lecture de sons et de musique, ainsi que la gestion du temps et des événements. SDL facilite également le travail avec des threads pour la gestion de tâches concurrentes. L'inclusion de \<SDL2/SDL.h\> dans le code indique l'utilisation de ces fonctionnalités, mais nécessite également la liaison avec la bibliothèque SDL lors de la compilation pour un fonctionnement approprié.
-
-• **String.h:** La bibliothèque \<string.h\> offre des outils essentiels pour travailler avec des chaînes de caractères en langage C, couvrant des opérations telles que la détermination de la longueur, la copie, la concaténation, la comparaison et la division en **"tokens"**. Ces fonctions sont largement utilisées dans le développement d'applications C qui impliquent la manipulation de chaînes de caractères.
 
 # **2.3** ** Exemple de test de TP:**
 
