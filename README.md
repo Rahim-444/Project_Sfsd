@@ -34,7 +34,7 @@ Notre projet consiste à mettre en œuvre un système de gestion des contacts en
 
 1. **Après l'exécution de programme:**
 
-![image](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image1.png)
+![image1](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image5.png)
 
 1. **Insertion Random:** cliquer sur la touche 'M'
 
