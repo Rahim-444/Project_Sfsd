@@ -34,44 +34,44 @@ Notre projet consiste à mettre en œuvre un système de gestion des contacts en
 
 1. **Après l'exécution de programme:**
 
-![image1](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image5.png)
+![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image1.png)
 
 1. **Insertion Random:** cliquer sur la touche 'M'
 
-![image](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image2.png)
+![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image2.png)
 
 1. **Insertion avec des formations de contact:** cliquer sur 'espace'.
 
-![image](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image3.png)
+![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image3.png)
 
 1. **Suppression d'un contact:** cliquer sur 'delete'
 
 **Avant:**
 
-![image](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image4.png)
+![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image4.png)
 
 **Apres:**
 
-![image](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image5.png)
+![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image5.png)
 
 1. **La recherche d'un contact :** cliquer sur 'R'
 
-![image](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image6.png)
+![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image6.png)
 
 1. **Fichier de contact:**
-
-![image](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image8.png)
+2. 
+![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image8.png)
 
 1. **Fichier de contacts triée:**
 
-![image](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image10.png)
+![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image10.png)
 
 1. **Fichier de table d'index (dense):**
 
-![image](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image7.png)
+![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image7.png)
 
 1. **Fichier table d'index (non dense):**
 
-![image](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image9.png)
+![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image9.png)
 
 
