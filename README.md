@@ -34,44 +34,44 @@ Notre projet consiste à mettre en œuvre un système de gestion des contacts en
 
 1. **Après l'exécution de programme:**
 
-![](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image1.png)
+![image](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image1.png)
 
 1. **Insertion Random:** cliquer sur la touche 'M'
 
-![](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image2.png)
+![image](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image2.png)
 
 1. **Insertion avec des formations de contact:** cliquer sur 'espace'.
 
-![](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image3.png)
+![image](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image3.png)
 
 1. **Suppression d'un contact:** cliquer sur 'delete'
 
 **Avant:**
 
-![](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image4.png)
+![image](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image4.png)
 
 **Apres:**
 
-![](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image5.png)
+![image](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image5.png)
 
 1. **La recherche d'un contact :** cliquer sur 'R'
 
-![](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image6.png)
+![image](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image6.png)
 
 1. **Fichier de contact:**
 
-![](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image8.png)
+![image](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image8.png)
 
 1. **Fichier de contacts triée:**
 
-![](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image10.png)
+![image](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image10.png)
 
 1. **Fichier de table d'index (dense):**
 
-![](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image7.png)
+![image](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image7.png)
 
 1. **Fichier table d'index (non dense):**
 
-![](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image9.png)
+![image](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image9.png)
 
 
