@@ -1,77 +1,75 @@
-# **Gestion des Contacts**
-# **Projet de TP (Rapport):**
+# **Contact Management**
+## **Project Report:**
 
-dependencies:  **SDL2** , **gcc**.
+**Dependencies:** **SDL2**, **gcc**.
 
-Thème:
+### **Theme:**
 
-Manipulation sur gestion des contacts en langage C. **binôme** **:**
+Manipulation of contact management in C language. **Pair:**
 
-• **Belkacemi Abderrahim –** (Rahim444) 
-https://www.linkedin.com/in/belkacemi-abderrahim-80320a184/
+- **Belkacemi Abderrahim** – (Rahim444)  
+  [LinkedIn Profile](https://www.linkedin.com/in/belkacemi-abderrahim-80320a184/)
 
-• **Aoudia Nour Islam** (islam5603)
+- **Aoudia Nour Islam** (islam5603)
 
-# 1. **Description:**
+## 1. **Description:**
 
-Notre projet consiste à mettre en œuvre un système de gestion des contacts en utilisant un fichier binaire nommé 'Contacts.bin'. Ce fichier adopte une structure LVC (Organisation chaînée, format variable des enregistrements, et avec chevauchement). Cette approche offre une flexibilité particulière pour gérer efficacement un grand nombre de contacts.
+Our project involves implementing a contact management system using a binary file named 'Contacts.bin'. This file adopts an LVC structure (Chained Organization, variable record format, and overlapping). This approach offers particular flexibility to efficiently manage a large number of contacts.
 
-# **2.1. Structures de données utilisées:**
+## **2.1. Data Structures Used:**
 
-• **Contact:** La structure Contact est conçue pour stocker des informations sur un contact, comprenant un identifiant (iD), un nom (name), un numéro de téléphone (phoneNumber), une adresse e-mail (email), et la possibilité d'inclure des informations supplémentaires de longueur variable (otherInfo). Chaque champ est dimensionné pour accommoder la taille maximale prévue, avec des marges pour les caractères de fin de chaîne. L'utilisation d'un pointeur pour otherInfo suggère une gestion dynamique de la mémoire pour stocker des détails supplémentaires.
+- **Contact:** The Contact structure is designed to store information about a contact, including an identifier (iD), a name (name), a phone number (phoneNumber), an email address (email), and the possibility to include additional variable-length information (otherInfo). Each field is sized to accommodate the maximum expected size, with margins for string termination characters. The use of a pointer for otherInfo suggests dynamic memory management for storing additional details.
 
-• **Block** :\*\*La structure Block est destinée à organiser et stocker des contacts de manière efficace. Chaque bloc est identifié par un numéro (blockNumber) et conserve une trace de l'espace occupé en caractères (ocupiedSpace). Un tableau de caractères nommé Contacts est utilisé pour stocker les contacts, bien que la taille spécifique ne soit pas précisée. Un pointeur vers le prochain bloc (nextBlock) permet de créer une liste chaînée de blocs, facilitant la gestion dynamique de la mémoire pour stocker un grand nombre de contacts de manière optimale.
+- **Block:** The Block structure is intended to organize and store contacts efficiently. Each block is identified by a number (blockNumber) and keeps track of the space occupied in characters (occupiedSpace). A character array named Contacts is used to store contacts, although the specific size is not specified. A pointer to the next block (nextBlock) allows for the creation of a linked list of blocks, facilitating dynamic memory management to store a large number of contacts optimally.
 
-• **FileInfo:** La structure FileInfo gère de manière centralisée une séquence de blocs, probablement organisés en liste chaînée pour stocker des contacts. Les principaux éléments incluent un pointeur vers le premier bloc (firstBlock), le nombre total de blocs dans la séquence (totalSize), le nombre total de contacts stockés (contactSize), ainsi que des statistiques sur les opérations effectuées, telles que le nombre de contacts ajoutés (addedConctacts) et le nombre de contacts supprimés (deletedContacts).
+- **FileInfo:** The FileInfo structure centrally manages a sequence of blocks, probably organized in a linked list to store contacts. The main elements include a pointer to the first block (firstBlock), the total number of blocks in the sequence (totalSize), the total number of contacts stored (contactSize), as well as statistics on operations performed, such as the number of contacts added (addedContacts) and the number of contacts deleted (deletedContacts).
 
-• **IndexFile:** La structure IndexFile est conçue pour indexer des blocs de données dans un fichier. Chaque élément d'index est associé à un identifiant de fichier (id), un pointeur vers le bloc correspondant (Pblock), et un décalage à l'intérieur du bloc (offset). La liste chaînée (next) permet une gestion dynamique des éléments d'index, facilitant ainsi l'organisation flexible de plusieurs entrées d'index dans une structure de fichiers.
+- **IndexFile:** The IndexFile structure is designed to index data blocks in a file. Each index element is associated with a file identifier (id), a pointer to the corresponding block (Pblock), and an offset within the block (offset). The linked list (next) allows for dynamic management of index elements, thus facilitating flexible organization of multiple index entries in a file structure.
 
-# **2.2.** **Les différents modules implémentés:**
+## **2.2. Implemented Modules:**
 
-• **SDL2/SDL.h:** La bibliothèque \<SDL2/SDL.h\> en langage C, connue sous le nom de SDL ( **Simple DirectMedia Layer** ), offre des fonctionnalités puissantes pour le développement multimédia. Elle permet la création de fenêtres graphiques, la gestion de l'entrée utilisateur, le rendu graphique, la lecture de sons et de musique, ainsi que la gestion du temps et des événements. SDL facilite également le travail avec des threads pour la gestion de tâches concurrentes. L'inclusion de \<SDL2/SDL.h\> dans le code indique l'utilisation de ces fonctionnalités, mais nécessite également la liaison avec la bibliothèque SDL lors de la compilation pour un fonctionnement approprié.
+- **SDL2/SDL.h:** The \<SDL2/SDL.h\> library in C language, known as SDL (**Simple DirectMedia Layer**), offers powerful features for multimedia development. It enables the creation of graphic windows, user input management, graphic rendering, sound and music playback, as well as time and event management. SDL also facilitates working with threads for concurrent task management. Including \<SDL2/SDL.h\> in the code indicates the use of these features, but also requires linking with the SDL library during compilation for proper functionality.
 
-# **2.3** Exemple de test de TP:
+## **2.3 Example Test:**
 
-1. **Après l'exécution de programme:**
+1. **After program execution:**
 
-![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image1.png)
+   ![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image1.png)
 
-1. **Insertion Random:** cliquer sur la touche 'M'
+2. **Random Insertion:** Click on the 'M' key
 
-![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image2.png)
+   ![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image2.png)
 
-1. **Insertion avec des formations de contact:** cliquer sur 'espace'.
+3. **Insertion with contact details:** Click on 'space'.
 
-![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image3.png)
+   ![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image3.png)
 
-1. **Suppression d'un contact:** cliquer sur 'delete'
+4. **Deleting a contact:** Click on 'delete'
 
-**Avant:**
+   **Before:**
 
-![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image4.png)
+   ![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image4.png)
 
-**Apres:**
+   **After:**
 
-![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image5.png)
+   ![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image5.png)
 
-1. **La recherche d'un contact :** cliquer sur 'R'
+5. **Searching for a contact:** Click on 'R'
 
-![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image6.png)
+   ![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image6.png)
 
-1. **Fichier de contact:**
-2. 
-![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image8.png)
+6. **Contact file:**
 
-1. **Fichier de contacts triée:**
+   ![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image8.png)
 
-![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image10.png)
+7. **Sorted contact file:**
 
-1. **Fichier de table d'index (dense):**
+   ![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image10.png)
 
-![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image7.png)
+8. **Dense index file:**
 
-1. **Fichier table d'index (non dense):**
+   ![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image7.png)
 
-![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image9.png)
+9. **Sparse index file:**
 
-
+   ![image](https://raw.githubusercontent.com/Rahim-444/ProjectSfsd/master/assets/image9.png)
