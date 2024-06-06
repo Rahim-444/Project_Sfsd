@@ -34,44 +34,44 @@ Notre projet consiste à mettre en œuvre un système de gestion des contacts en
 
 1. **Après l'exécution de programme:**
 
-![](./assets/image1.png)
+![](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image1.png)
 
 1. **Insertion Random:** cliquer sur la touche 'M'
 
-![](./assets/image2.png)
+![](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image2.png)
 
 1. **Insertion avec des formations de contact:** cliquer sur 'espace'.
 
-![](./assets/image3.png)
+![](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image3.png)
 
 1. **Suppression d'un contact:** cliquer sur 'delete'
 
 **Avant:**
 
-![](./assets/image4.png)
+![](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image4.png)
 
 **Apres:**
 
-![](./assets/image5.png)
+![](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image5.png)
 
 1. **La recherche d'un contact :** cliquer sur 'R'
 
-![](./assets/image6.png)
+![](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image6.png)
 
 1. **Fichier de contact:**
 
-![](./assets/image8.png)
+![](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image8.png)
 
 1. **Fichier de contacts triée:**
 
-![](./assets/image10.png)
+![](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image10.png)
 
 1. **Fichier de table d'index (dense):**
 
-![](./assets/image7.png)
+![](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image7.png)
 
 1. **Fichier table d'index (non dense):**
 
-![](./assets/image9.png)
+![](https://github.com/Rahim-444/ProjectSfsd/blob/master/assets/image9.png)
 
 
