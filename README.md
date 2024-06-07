@@ -19,9 +19,22 @@ vim.opt.rtp:prepend(lazypath)
 ```
 
 **How to run** :
-```bash
-gcc % -o %< -lm -I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/SDL2.framework/Headers -Wl,-rpath,/Library/Frameworks -    F/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -framework SDL2
+```jsx
+import Hero from "./_Componenets/Hero";
+import Section2 from "./_Componenets/Section2";
+
+export const dynamic = "force-static";
+
+export default async function HomePage() {
+  return (
+    <main>
+      <Hero />
+      <Section2 />
+    </main>
+  );
+}
 ```
+
 
 ### **Theme:**
 
