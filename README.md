@@ -3,6 +3,11 @@
 
 **Dependencies:** **SDL2**, **gcc**.
 
+**How to run** :
+```bash
+gcc % -o %< -lm -I/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks/SDL2.framework/Headers -Wl,-rpath,/Library/Frameworks -    F/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/System/Library/Frameworks -framework SDL2
+```
+
 ### **Theme:**
 
 Manipulation of contact management in C language. **Pair:**
